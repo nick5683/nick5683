@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://nick5683.gitee.io/2022/04/06/Hexo/Hexo-admin/</loc>
+    
+    <lastmod>2022-04-06</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://nick5683.gitee.io/2022/03/31/Hexo/hexo-blog-theme-pure-usage/</loc>
     
     <lastmod>2022-04-01</lastmod>

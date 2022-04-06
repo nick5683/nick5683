@@ -6,7 +6,7 @@
   <link href="https://nick5683.gitee.io/atom.xml" rel="self"/>
   
   <link href="https://nick5683.gitee.io/"/>
-  <updated>2022-04-01T01:55:16.149Z</updated>
+  <updated>2022-04-06T06:33:52.523Z</updated>
   <id>https://nick5683.gitee.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>为hexo添加hexo-admin组件</title>
+    <link href="https://nick5683.gitee.io/2022/04/06/Hexo/Hexo-admin/"/>
+    <id>https://nick5683.gitee.io/2022/04/06/Hexo/Hexo-admin/</id>
+    <published>2022-04-06T05:46:00.000Z</published>
+    <updated>2022-04-06T06:33:52.523Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h4><blockquote><p>已安装好<a href="https://hexo.io/zh-cn/">hexo</a>，选择好自己的<a href="https://hexo.io/themes">主题</a>(我选择的主题是<a href="https://github.com/cofess/hexo-theme-pure">pure</a>，并部署到<a href="https://www.gitee.com/">Gitee</a>等静态托管服务器上。</p></blockquote><h4 id="插件介绍"><a href="#插件介绍" class="headerlink" title="插件介绍"></a>插件介绍</h4><blockquote><p><a href="https://github.com/jaredly/hexo-admin"><strong>hexo-admin</strong></a> 是一个Hexo博客引擎的管理用户界面插件。这个插件最初是作为本地编辑器设计的，在本地运行<a href="https://hexo.io/zh-cn/">hexo</a>使用<strong>hexo-admin</strong>编写文章，然后通过<code>hexo g</code>或<code>hexo d</code>（<code>hexo g</code>是本地渲染，<code>hexo d</code>是将渲染的静态页面发布到<a href="https://www.gitee.com/">Gitee</a>）将生成的静态页面发布到<a href="https://www.gitee.com/">Gitee</a>等静态服务器。<br>如果你使用的是非静态托管服务器，比如自己买的主机搭建的<a href="https://hexo.io/zh-cn/">hexo</a>，那么一定要设置<a href="https://github.com/jaredly/hexo-admin"><strong>hexo-admin</strong></a> 的密码，否则谁都可以编辑你的文章。</p></blockquote><h4 id="插件安装"><a href="#插件安装" class="headerlink" title="插件安装"></a>插件安装</h4><ol><li><p>首先进入hexo创建的博客项目的根目录下，执行</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save hexo-admind</span><br></pre></td></tr></table></figure><p>mac可能需要root权限，前面加个<code>sudo</code> 就可以了。如果报错缺少组件，则缺少什么安装什么，<code>npm install</code> 加缺少的组件。</p></li><li><p>运行下列命令启动<a href="https://github.com/jaredly/hexo-admin"><strong>hexo-admin</strong></a> ：</p><p>hexo server -d<br>打开 <a href="http://localhost:4000/admin/">http://localhost:4000/admin/</a> 就可以访问到hexo-admin管理页面了。</p></li></ol><h4 id="密码保护"><a href="#密码保护" class="headerlink" title="密码保护"></a>密码保护</h4><p>打开<code>setting</code>，点击<code>Setup authentification here</code>输入用户名，密码，密钥，下面会自动生成配置文件，复制加在<a href="https://links.jianshu.com/go?to=https://hexo.io/zh-cn/">hexo</a>根目录下的<code>_config.yml</code>中：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">admin:</span><br><span class="line">  username: Nick5683</span><br><span class="line">  password_hash: $2a$10$EU......ZyV3l6</span><br><span class="line">  secret: Nick5683</span><br><span class="line"></span><br></pre></td></tr></table></figure><p>hexo-admin has switched to use bcrypt;  打开链接：<a href="http://www.ab126.com/goju/10822.html">http://www.ab126.com/goju/10822.html</a><br><font color="red">加密方式不再用md5加密，而是使用bcrypt 加密， 打开链接：<a href="http://www.ab126.com/goju/10822.html">bcrypt</a></font></p><p>重启<a href="https://hexo.io/zh-cn/">hexo</a>，就可以看到登录页面了</p><h4 id="发布文章"><a href="#发布文章" class="headerlink" title="发布文章"></a>发布文章</h4><p>进入后台之后点击<code>Deploy</code>，里面的Deploy按钮是用来执行发布脚本的，所以我们先在博客根目录下新建个脚本文件<code>hexo-deploy.sh</code>，里面写下下面代码然后保存，</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo g &amp;&amp; hexo d</span><br></pre></td></tr></table></figure><p>然后给hexo-d.sh加入可执行权限</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x hexo-deploy.sh</span><br></pre></td></tr></table></figure><p>然后在<code>_config.yml</code>中的admin下添加</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">admin:</span><br><span class="line">  username: Nick5683</span><br><span class="line">  password_hash: $2a$10$EU......ZyV3l6</span><br><span class="line">  secret: Nick5683</span><br><span class="line">  deployCommand: ./hexo-deploy.sh</span><br></pre></td></tr></table></figure><p>设置发布执行的脚本，点击<code>Deploy</code>就会执行这个命令并提交到<a href="https://www.gitee.com/">Gitee</a>上。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h4 id=&quot;准备工作&quot;&gt;&lt;a href=&quot;#准备工作&quot; class=&quot;headerlink&quot; title=&quot;准备工作&quot;&gt;&lt;/a&gt;准备工作&lt;/h4&gt;&lt;blockquote&gt;
+&lt;p&gt;已安装好&lt;a href=&quot;https://hexo.io/zh-cn/&quot;&gt;hexo&lt;/a&gt;，选择好</summary>
+      
+    
+    
+    
+    <category term="Hexo" scheme="https://nick5683.gitee.io/categories/Hexo/"/>
+    
+    
+    <category term="Hexo" scheme="https://nick5683.gitee.io/tags/Hexo/"/>
+    
+  </entry>
   
   <entry>
     <title>Hexo 安装，添加theme并部署到gitee</title>
@@ -461,30 +486,6 @@
       
       
     <summary type="html">&lt;h3 id=&quot;多线程&quot;&gt;&lt;a href=&quot;#多线程&quot; class=&quot;headerlink&quot; title=&quot;多线程&quot;&gt;&lt;/a&gt;多线程&lt;/h3&gt;&lt;h2 id=&quot;1-进程与线程&quot;&gt;&lt;a href=&quot;#1-进程与线程&quot; class=&quot;headerlink&quot; title=&quot;1.进程与线程</summary>
-      
-    
-    
-    
-    <category term="Interview" scheme="https://nick5683.gitee.io/categories/Interview/"/>
-    
-    
-    <category term="iOS" scheme="https://nick5683.gitee.io/tags/iOS/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>代码管理</title>
-    <link href="https://nick5683.gitee.io/2022/03/30/iOS/Code-management/"/>
-    <id>https://nick5683.gitee.io/2022/03/30/iOS/Code-management/</id>
-    <published>2022-03-30T06:28:09.798Z</published>
-    <updated>2022-03-31T09:54:53.467Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="代码管理"><a href="#代码管理" class="headerlink" title="代码管理"></a>代码管理</h1><h2 id="1-SVN与Git优缺点比较"><a href="#1-SVN与Git优缺点比较" class="headerlink" title="1.SVN与Git优缺点比较"></a>1.SVN与Git优缺点比较</h2><p>1．SVN优缺点</p><ul><li><p>优点： </p><p>  1、管理方便，逻辑明确，符合一般人思维习惯。 </p><p>  2、易于管理，集中式服务器更能保证安全性。 </p><p>  3、代码一致性非常高。 </p><p>  4、 适合开发人数不多的项目开发。 </p></li><li><p>缺点： </p><p>  1、服务器压力太大，数据库容量暴增。 </p><p>  2、如果不能连接到服务器上，基本上不可以工作，看上面第二步，如果服务器不能连接上，就不能提交，还原，对比等等。 </p><p>  3、不适合开源开发（开发人数非常非常多，但是Google app engine就是用svn的）。但是一般集中式管理的有非常明确的权限管理机制（例如分支访问限制），可以实现分层管理，从而很好的解决开发人数众多的问题。</p></li></ul><p>2．Git优缺点</p><ul><li><p>优点： </p><p>  1、适合分布式开发，强调个体。 </p><p>  2、公共服务器压力和数据量都不会太大。 </p><p>  3、速度快、灵活。 </p><p>  4、任意两个开发者之间可以很容易的解决冲突。 </p><p>  5、离线工作。 </p></li><li><p>缺点： </p><p>  1、学习周期相对而言比较长。 </p><p>  2、不符合常规思维。 </p><p>  3、代码保密性差，一旦开发者把整个库克隆下来就可以完全公开所有代码和版本信息。</p></li></ul><h2 id="2-Git与SVN的区别"><a href="#2-Git与SVN的区别" class="headerlink" title="2.Git与SVN的区别"></a>2.Git与SVN的区别</h2><ul><li><p>1、Git是分布式的，而SVN不是分布式的</p></li><li><p>2、Git把内容按元数据方式存储，而SVN是按文件</p></li><li><p>3、Git没有一个全局版本号，SVN有，目前为止这是SVN相比Git缺少的最大的一个特征</p></li><li><p>4、Git的内容的完整性要优于SVN: GIT的内容存储使用的是SHA-1哈希算法。这能确保代码内容的完整性，确保在遇到磁盘故障和网络问题时降低对版本库的破坏</p></li><li><p>5、Git下载下来后，在OffLine状态下可以看到所有的Log,SVN不可以</p></li><li><p>6、SVN必须先Update才能Commit,忘记了合并时就会出现一些错误，git还是比较少的出现这种情况</p></li><li><p>7、克隆一份全新的目录以同样拥有五个分支来说，SVN是同时复製5个版本的文件,也就是说重复五次同样的动作。而Git只是获取文件的每个版本的 元素，然后只载入主要的分支(master)在我的经验,克隆一个拥有将近一万个提交(commit),五个分支,每个分支有大约1500个文件的 SVN,耗了将近一个小时！而Git只用了区区的1分钟</p></li><li><p>8、版本库（repository):SVN只能有一个指定中央版本库。当这个中央版本库有问题时，所有工作成员都一起瘫痪直到版本库维修完毕或者新的版本库设立完成。而 Git可以有无限个版本库。或者，更正确的说法，每一个Git都是一个版本库，区别是它们是否拥有活跃目录（Git Working Tree）。如果主要版本库（例如：置於GitHub的版本库）发生了什麼事，工作成员仍然可以在自己的本地版本库（local repository）提交，等待主要版本库恢复即可。工作成员也可以提交到其他的版本库</p></li><li><p>9、分支（Branch）在SVN，分支是一个完整的目录。且这个目录拥有完整的实际文件。如果工作成员想要开啟新的分支，那将会影响“全世界”！每个人都会拥有和你一样的分支。如果你的分支是用来进行破坏工作（安检测试），那将会像传染病一样,你改一个分支，还得让其他人重新切分支重新下载，十分狗血。而 Git，每个工作成员可以任意在自己的本地版本库开啟无限个分支。举例：当我想尝试破坏自己的程序（安检测试），并且想保留这些被修改的文件供日后使用， 我可以开一个分支，做我喜欢的事。完全不需担心妨碍其他工作成员。只要我不合并及提交到主要版本库，没有一个工作成员会被影响。等到我不需要这个分支时， 我只要把它从我的本地版本库删除即可。无痛无痒。</p><p>  Git的分支名是可以使用不同名字的。例如：我的本地分支名为OK，而在主要版本库的名字其实是master。</p><p>  最值得一提，我可以在Git的任意一个提交点（commit point）开启分支！（其中一个方法是使用gitk –all 可观察整个提交记录，然后在任意点开啟分支。）</p></li><li><p>10、提交（Commit）在SVN，当你提交你的完成品时，它将直接记录到中央版本库。当你发现你的完成品存在严重问题时，你已经无法阻止事情的发生了。如果网路中断，你根本没办法提交！而Git的提交完全属於本地版本库的活动。而你只需“推”（git push）到主要版本库即可。Git的“推”其实是在执行“同步”（Sync）</p></li></ul>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;代码管理&quot;&gt;&lt;a href=&quot;#代码管理&quot; class=&quot;headerlink&quot; title=&quot;代码管理&quot;&gt;&lt;/a&gt;代码管理&lt;/h1&gt;&lt;h2 id=&quot;1-SVN与Git优缺点比较&quot;&gt;&lt;a href=&quot;#1-SVN与Git优缺点比较&quot; class=&quot;headerli</summary>
       
     
     
