@@ -2,17 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random QR Code</title>
+    <meta name="viewport" content= "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>获取微信</title>
     <script>
         function displayQRCode() {
-            var qrCodes = ["./wx1.jpg", "./wx2.jpg"]; // 假设这些二维码图片在同一个目录下
+            var qrCodes = ["./images/wx1.jpg", "./images/wx2.jpg"]; // 假设这些二维码图片在同一个目录下
             var index = Math.floor(Math.random() * qrCodes.length);
             document.getElementById("qr-code").src = qrCodes[index];
         }
     </script>
 </head>
 <body onload="displayQRCode()">
-    <img id="qr-code" alt="QR Code" />
+    <img id="qr-code" alt="Wx Code" src="./wx2.jpg" style="
+        width: 100%;" />
+        
+    <p onclick="copywx()" class="copy"><a href="weixin://">复制并跳转微信</a></p>
+        
 </body>
+
+<script>
+    /*点击复制微信号*/
+    function copywx(){
+    }
+
+    </script>
 </html>
