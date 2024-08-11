@@ -6,7 +6,7 @@
     <title>Random QR Code</title>
     <script>
         function displayQRCode() {
-            var qrCodes = ["./images/wx1.jpg", "./images/wx2.jpg"]; // 假设这些二维码图片在同一个目录下
+            var qrCodes = ["./wx1.jpg", "./wx2.jpg"]; // 假设这些二维码图片在同一个目录下
             var index = Math.floor(Math.random() * qrCodes.length);
             document.getElementById("qr-code").src = qrCodes[index];
         }
