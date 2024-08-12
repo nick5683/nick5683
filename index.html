@@ -1,29 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content= "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>获取微信</title>
-    <script>
-        function displayQRCode() {
-            var qrCodes = ["./wx1.jpg", "./wx2.jpg"]; // 假设这些二维码图片在同一个目录下
-            var index = Math.floor(Math.random() * qrCodes.length);
-            document.getElementById("qr-code").src = qrCodes[index];
-        }
-    </script>
-</head>
-<body onload="displayQRCode()">
-    <img id="qr-code" alt="Wx Code" src="./wx2.jpg" style="
-        width: 100%;" />
-        
-    <p onclick="copywx()" class="copy"><a href="weixin://">复制并跳转微信</a></p>
-        
-</body>
+    <head>
+        <meta charset="UTF-8">
+            <meta name="viewport" content= "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+                <title>获取微信</title>
+                <script>
+                    
+                    function displayQRCode() {
+                        var qrCodes = ["./wx1.jpg", "./wx2.jpg"]; // 假设这些二维码图片在同一个目录下
+                        var wxids = ["manyuan389", "manyuan965"]; // 假设这些二维码图片在同一个目录下
+                        var index = Math.floor(Math.random() * qrCodes.length);
+                        document.getElementById("wxid").value = wxids[index];
+                        document.getElementById("qr-code").src = qrCodes[index];
+                    }
+                    
+                    /*点击复制微信号*/
+                    function copywx(){
+                        var oInput = document.createElement('input');
+                        oInput.value = document.getElementById("wxid").value;
+                        document.body.appendChild(oInput);
+                        oInput.select(); // 选择对象
+                        document.execCommand("Copy"); // 执行浏览器复制命令
+                        oInput.className = 'oInput';
+                        oInput.style.display='none';
+                        window.location.href="weixin://";//打开微信
 
-<script>
-    /*点击复制微信号*/
-    function copywx(){
-    }
+                    }
 
-    </script>
+                </script>
+    </head>
+    <body onload="displayQRCode()">
+        <img id="qr-code" alt="Wx Code" src="./wx2.jpg" style="width: 100%;" />
+        <div cols="20" id="wxid" ></div>
+        <input type="button" onclick="copywx()" class="copy" value="复制并打开微信"  style="border-style: none;background:none;color: blue;"> </input>
+        
+    </body>
+    
 </html>
