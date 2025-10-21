@@ -1,0 +1,3 @@
+Sitemap: https://nick5683.gitee.io/sitemap.xml
+
+User-agent: *

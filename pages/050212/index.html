@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>GCD函数解析(栅栏、信号量、一次性、调度组) | Nick个人博客</title>
+    <meta name="generator" content="VuePress 1.9.10">
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_3114978_qe0b39no76.css">
+    <script language="javascript" type="text/javascript" src="/js/pgmanor-self.js"></script>
+    <link rel="alternate" type="application/rss+xml" href="https://wiki.eryajf.net/rss.xml" title="Nick个人博客 RSS Feed">
+    <link rel="alternate" type="application/atom+xml" href="https://wiki.eryajf.net/feed.atom" title="Nick个人博客 Atom Feed">
+    <link rel="alternate" type="application/json" href="https://wiki.eryajf.net/feed.json" title="Nick个人博客 JSON Feed">
+    <meta name="description" content="王飞飞不会飞">
+    <meta name="image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cc61f573f306401f9a9d3baa66a2af04~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta name="twitter:title" content="GCD函数解析(栅栏、信号量、一次性、调度组)">
+    <meta name="twitter:description" content="王飞飞不会飞">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cc61f573f306401f9a9d3baa66a2af04~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta name="twitter:url" content="https://wiki.eryajf.net/05.%E7%BD%91%E7%BB%9C%E5%A5%BD%E6%96%87/02.%E7%8E%8B%E9%A3%9E%E9%A3%9E%E4%B8%8D%E4%BC%9A%E9%A3%9E_objc/12.GCD%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90(%E6%A0%85%E6%A0%8F%E3%80%81%E4%BF%A1%E5%8F%B7%E9%87%8F%E3%80%81%E4%B8%80%E6%AC%A1%E6%80%A7%E3%80%81%E8%B0%83%E5%BA%A6%E7%BB%84).html">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="GCD函数解析(栅栏、信号量、一次性、调度组)">
+    <meta property="og:description" content="王飞飞不会飞">
+    <meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cc61f573f306401f9a9d3baa66a2af04~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta property="og:url" content="https://wiki.eryajf.net/05.%E7%BD%91%E7%BB%9C%E5%A5%BD%E6%96%87/02.%E7%8E%8B%E9%A3%9E%E9%A3%9E%E4%B8%8D%E4%BC%9A%E9%A3%9E_objc/12.GCD%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90(%E6%A0%85%E6%A0%8F%E3%80%81%E4%BF%A1%E5%8F%B7%E9%87%8F%E3%80%81%E4%B8%80%E6%AC%A1%E6%80%A7%E3%80%81%E8%B0%83%E5%BA%A6%E7%BB%84).html">
+    <meta property="og:site_name" content="Eryajf">
+    <meta property="article:published_time" content="2022-07-15T11:06:29.000Z">
+    <meta property="article:tag" content="iOS">
+    <meta itemprop="name" content="GCD函数解析(栅栏、信号量、一次性、调度组)">
+    <meta itemprop="description" content="王飞飞不会飞">
+    <meta itemprop="image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cc61f573f306401f9a9d3baa66a2af04~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta name="keywords" content="Nick5682,iOS,ios,Vue,vue,VUE,Jenkins,jenkins,Pod,pod,Hexo,hexo,面试,interview">
+    <meta name="baidu-site-verification" content="code-LTKHwOecxI">
+    <meta name="theme-color" content="#11a8cd">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <meta name="renderer" content="webkit">
+    
+    <link rel="preload" href="/assets/css/0.styles.bd798f36.css" as="style"><link rel="preload" href="/assets/js/app.20c720c9.js" as="script"><link rel="preload" href="/assets/js/4.2c0aa082.js" as="script"><link rel="preload" href="/assets/js/2.5c62803a.js" as="script"><link rel="preload" href="/assets/js/166.ce47c2ee.js" as="script"><link rel="preload" href="/assets/js/43.273be00f.js" as="script"><link rel="preload" href="/assets/js/25.e8711eab.js" as="script"><link rel="preload" href="/assets/js/26.8841a5a6.js" as="script"><link rel="prefetch" href="/assets/js/1.8b42134a.js"><link rel="prefetch" href="/assets/js/100.273e5d60.js"><link rel="prefetch" href="/assets/js/101.a322debe.js"><link rel="prefetch" href="/assets/js/102.89f3aa16.js"><link rel="prefetch" href="/assets/js/103.d33e8e5b.js"><link rel="prefetch" href="/assets/js/104.a53e35d4.js"><link rel="prefetch" href="/assets/js/105.b5eb16a2.js"><link rel="prefetch" href="/assets/js/106.89a25bfa.js"><link rel="prefetch" href="/assets/js/107.d6eba5b6.js"><link rel="prefetch" href="/assets/js/108.3fe432b4.js"><link rel="prefetch" href="/assets/js/109.7b1e3cea.js"><link rel="prefetch" href="/assets/js/11.b0023e25.js"><link rel="prefetch" href="/assets/js/110.b80b96ee.js"><link rel="prefetch" href="/assets/js/111.b4a20c11.js"><link rel="prefetch" href="/assets/js/112.c8ff57e2.js"><link rel="prefetch" href="/assets/js/113.40c38e95.js"><link rel="prefetch" href="/assets/js/114.0486aa1c.js"><link rel="prefetch" href="/assets/js/115.14a484c9.js"><link rel="prefetch" href="/assets/js/116.d167f15e.js"><link rel="prefetch" href="/assets/js/117.3e4fc0c6.js"><link rel="prefetch" href="/assets/js/118.29473197.js"><link rel="prefetch" href="/assets/js/119.fbf66f57.js"><link rel="prefetch" href="/assets/js/12.824d0275.js"><link rel="prefetch" href="/assets/js/120.e53cc17e.js"><link rel="prefetch" href="/assets/js/121.58905329.js"><link rel="prefetch" href="/assets/js/122.dfb4fd60.js"><link rel="prefetch" href="/assets/js/123.183491fd.js"><link rel="prefetch" href="/assets/js/124.12d86ce4.js"><link rel="prefetch" href="/assets/js/125.3b63df17.js"><link rel="prefetch" href="/assets/js/126.7380545e.js"><link rel="prefetch" href="/assets/js/127.074bf599.js"><link rel="prefetch" href="/assets/js/128.432308f8.js"><link rel="prefetch" href="/assets/js/129.507970b7.js"><link rel="prefetch" href="/assets/js/13.2e9bba8c.js"><link rel="prefetch" href="/assets/js/130.c4f990fc.js"><link rel="prefetch" href="/assets/js/131.ae51432f.js"><link rel="prefetch" href="/assets/js/132.2c60c18a.js"><link rel="prefetch" href="/assets/js/133.2e146229.js"><link rel="prefetch" href="/assets/js/134.c933ccff.js"><link rel="prefetch" href="/assets/js/135.2cda8f14.js"><link rel="prefetch" href="/assets/js/136.85e02e48.js"><link rel="prefetch" href="/assets/js/137.99eacec5.js"><link rel="prefetch" href="/assets/js/138.2ce980a4.js"><link rel="prefetch" href="/assets/js/139.5f0a73ae.js"><link rel="prefetch" href="/assets/js/14.cd7f264f.js"><link rel="prefetch" href="/assets/js/140.49675fed.js"><link rel="prefetch" href="/assets/js/141.ee2f95cd.js"><link rel="prefetch" href="/assets/js/142.cafce0c6.js"><link rel="prefetch" href="/assets/js/143.fd2a612d.js"><link rel="prefetch" href="/assets/js/144.5bf96dd7.js"><link rel="prefetch" href="/assets/js/145.414004f2.js"><link rel="prefetch" href="/assets/js/146.8063aeb2.js"><link rel="prefetch" href="/assets/js/147.66d1c47d.js"><link rel="prefetch" href="/assets/js/148.95543355.js"><link rel="prefetch" href="/assets/js/149.8f45cde0.js"><link rel="prefetch" href="/assets/js/15.ba947f6b.js"><link rel="prefetch" href="/assets/js/150.f641077f.js"><link rel="prefetch" href="/assets/js/151.b22f5c46.js"><link rel="prefetch" href="/assets/js/152.79e5ba8f.js"><link rel="prefetch" href="/assets/js/153.5f6be56a.js"><link rel="prefetch" href="/assets/js/154.4c52e318.js"><link rel="prefetch" href="/assets/js/155.1f5d5688.js"><link rel="prefetch" href="/assets/js/156.68d9ce69.js"><link rel="prefetch" href="/assets/js/157.e6ea1a18.js"><link rel="prefetch" href="/assets/js/158.c8272022.js"><link rel="prefetch" href="/assets/js/159.d074b362.js"><link rel="prefetch" href="/assets/js/16.ed6191e8.js"><link rel="prefetch" href="/assets/js/160.3781e258.js"><link rel="prefetch" href="/assets/js/161.0357d15d.js"><link rel="prefetch" href="/assets/js/162.328e10b8.js"><link rel="prefetch" href="/assets/js/163.98563364.js"><link rel="prefetch" href="/assets/js/164.173b3a1c.js"><link rel="prefetch" href="/assets/js/165.e7d42eb3.js"><link rel="prefetch" href="/assets/js/167.acb5c275.js"><link rel="prefetch" href="/assets/js/168.cb188ef7.js"><link rel="prefetch" href="/assets/js/169.ddf9d744.js"><link rel="prefetch" href="/assets/js/17.bcfb01a1.js"><link rel="prefetch" href="/assets/js/170.efeb634a.js"><link rel="prefetch" href="/assets/js/171.05447490.js"><link rel="prefetch" href="/assets/js/172.f131942e.js"><link rel="prefetch" href="/assets/js/173.35ee0e44.js"><link rel="prefetch" href="/assets/js/174.6ffeaf80.js"><link rel="prefetch" href="/assets/js/175.56f81767.js"><link rel="prefetch" href="/assets/js/176.d2f1a427.js"><link rel="prefetch" href="/assets/js/177.b4a77319.js"><link rel="prefetch" href="/assets/js/178.4fe474ef.js"><link rel="prefetch" href="/assets/js/179.13f3f2aa.js"><link rel="prefetch" href="/assets/js/18.70231b97.js"><link rel="prefetch" href="/assets/js/180.c484aa49.js"><link rel="prefetch" href="/assets/js/181.be7378d3.js"><link rel="prefetch" href="/assets/js/182.563a5506.js"><link rel="prefetch" href="/assets/js/183.e30c3153.js"><link rel="prefetch" href="/assets/js/184.74978185.js"><link rel="prefetch" href="/assets/js/185.f4152093.js"><link rel="prefetch" href="/assets/js/186.ea0e185a.js"><link rel="prefetch" href="/assets/js/187.8c0d212e.js"><link rel="prefetch" href="/assets/js/188.2f48cfb2.js"><link rel="prefetch" href="/assets/js/189.25e13088.js"><link rel="prefetch" href="/assets/js/19.6588cd3e.js"><link rel="prefetch" href="/assets/js/190.0109e793.js"><link rel="prefetch" href="/assets/js/191.5ca065e3.js"><link rel="prefetch" href="/assets/js/192.b955ec40.js"><link rel="prefetch" href="/assets/js/193.ccd0adc8.js"><link rel="prefetch" href="/assets/js/194.bd7eb342.js"><link rel="prefetch" href="/assets/js/195.48a6c676.js"><link rel="prefetch" href="/assets/js/196.871436e0.js"><link rel="prefetch" href="/assets/js/197.3b7a4e7b.js"><link rel="prefetch" href="/assets/js/198.aa66a35e.js"><link rel="prefetch" href="/assets/js/199.ff8c62a3.js"><link rel="prefetch" href="/assets/js/20.3dce3488.js"><link rel="prefetch" href="/assets/js/200.52b0a873.js"><link rel="prefetch" href="/assets/js/201.53c33553.js"><link rel="prefetch" href="/assets/js/202.ce7e600b.js"><link rel="prefetch" href="/assets/js/203.46193ec0.js"><link rel="prefetch" href="/assets/js/204.d932d8e2.js"><link rel="prefetch" href="/assets/js/205.9fc2961d.js"><link rel="prefetch" href="/assets/js/206.2c543107.js"><link rel="prefetch" href="/assets/js/207.b977e16a.js"><link rel="prefetch" href="/assets/js/208.16b40d49.js"><link rel="prefetch" href="/assets/js/209.e2afbc4a.js"><link rel="prefetch" href="/assets/js/21.807c689b.js"><link rel="prefetch" href="/assets/js/210.11047808.js"><link rel="prefetch" href="/assets/js/211.58015fa1.js"><link rel="prefetch" href="/assets/js/212.0441bec7.js"><link rel="prefetch" href="/assets/js/213.58db50e0.js"><link rel="prefetch" href="/assets/js/214.10d74081.js"><link rel="prefetch" href="/assets/js/215.10e8583d.js"><link rel="prefetch" href="/assets/js/216.e38ad3b1.js"><link rel="prefetch" href="/assets/js/217.6e94acbc.js"><link rel="prefetch" href="/assets/js/218.0ba913bd.js"><link rel="prefetch" href="/assets/js/219.53111950.js"><link rel="prefetch" href="/assets/js/22.1863116c.js"><link rel="prefetch" href="/assets/js/220.fc4050b3.js"><link rel="prefetch" href="/assets/js/221.64c1f97a.js"><link rel="prefetch" href="/assets/js/222.b558491b.js"><link rel="prefetch" href="/assets/js/223.af0aa9b1.js"><link rel="prefetch" href="/assets/js/224.3b5a6fea.js"><link rel="prefetch" href="/assets/js/225.3fce8e29.js"><link rel="prefetch" href="/assets/js/226.47d6343c.js"><link rel="prefetch" href="/assets/js/227.d89cff62.js"><link rel="prefetch" href="/assets/js/228.4c1c4af8.js"><link rel="prefetch" href="/assets/js/229.8924284e.js"><link rel="prefetch" href="/assets/js/23.663532d3.js"><link rel="prefetch" href="/assets/js/230.34238ff7.js"><link rel="prefetch" href="/assets/js/231.9d59b337.js"><link rel="prefetch" href="/assets/js/232.fd86d20a.js"><link rel="prefetch" href="/assets/js/233.6c6a231c.js"><link rel="prefetch" href="/assets/js/234.1856051a.js"><link rel="prefetch" href="/assets/js/235.8667fc48.js"><link rel="prefetch" href="/assets/js/236.d4d7eb76.js"><link rel="prefetch" href="/assets/js/237.37f646a0.js"><link rel="prefetch" href="/assets/js/238.62f796b6.js"><link rel="prefetch" href="/assets/js/239.505beb5e.js"><link rel="prefetch" href="/assets/js/24.d95b6231.js"><link rel="prefetch" href="/assets/js/240.c9f0be4e.js"><link rel="prefetch" href="/assets/js/241.0c196e3e.js"><link rel="prefetch" href="/assets/js/242.4983f58f.js"><link rel="prefetch" href="/assets/js/243.7655d378.js"><link rel="prefetch" href="/assets/js/244.d2dffc09.js"><link rel="prefetch" href="/assets/js/245.1b72d055.js"><link rel="prefetch" href="/assets/js/246.5a532244.js"><link rel="prefetch" href="/assets/js/247.27b3120f.js"><link rel="prefetch" href="/assets/js/248.aa577ae1.js"><link rel="prefetch" href="/assets/js/249.bad9a8b4.js"><link rel="prefetch" href="/assets/js/250.44f0f547.js"><link rel="prefetch" href="/assets/js/251.8efdc483.js"><link rel="prefetch" href="/assets/js/252.c91c1454.js"><link rel="prefetch" href="/assets/js/253.546bcf9b.js"><link rel="prefetch" href="/assets/js/254.1a2146e0.js"><link rel="prefetch" href="/assets/js/255.423f016b.js"><link rel="prefetch" href="/assets/js/256.bfe7b6df.js"><link rel="prefetch" href="/assets/js/257.006fb239.js"><link rel="prefetch" href="/assets/js/258.45dfb78d.js"><link rel="prefetch" href="/assets/js/259.8e94d423.js"><link rel="prefetch" href="/assets/js/260.74a459f2.js"><link rel="prefetch" href="/assets/js/261.1ff728c4.js"><link rel="prefetch" href="/assets/js/262.de99177b.js"><link rel="prefetch" href="/assets/js/263.55d47cf9.js"><link rel="prefetch" href="/assets/js/264.e758f510.js"><link rel="prefetch" href="/assets/js/265.2371cb8d.js"><link rel="prefetch" href="/assets/js/266.84a4f5f2.js"><link rel="prefetch" href="/assets/js/267.c97533d4.js"><link rel="prefetch" href="/assets/js/268.a0634a80.js"><link rel="prefetch" href="/assets/js/269.86f7f3cf.js"><link rel="prefetch" href="/assets/js/27.dc3342ad.js"><link rel="prefetch" href="/assets/js/270.a56d98b8.js"><link rel="prefetch" href="/assets/js/271.23d209b2.js"><link rel="prefetch" href="/assets/js/28.426e64f3.js"><link rel="prefetch" href="/assets/js/29.58b2a4f2.js"><link rel="prefetch" href="/assets/js/3.0cbfac7c.js"><link rel="prefetch" href="/assets/js/30.fad33956.js"><link rel="prefetch" href="/assets/js/31.7651bbca.js"><link rel="prefetch" href="/assets/js/32.d67bea38.js"><link rel="prefetch" href="/assets/js/33.fb731877.js"><link rel="prefetch" href="/assets/js/34.d3354751.js"><link rel="prefetch" href="/assets/js/35.a1d6dfa3.js"><link rel="prefetch" href="/assets/js/36.93c3f286.js"><link rel="prefetch" href="/assets/js/37.c4dedd04.js"><link rel="prefetch" href="/assets/js/38.d4c343d6.js"><link rel="prefetch" href="/assets/js/39.f36b6083.js"><link rel="prefetch" href="/assets/js/40.53f5e0a0.js"><link rel="prefetch" href="/assets/js/41.63518e36.js"><link rel="prefetch" href="/assets/js/42.87397db5.js"><link rel="prefetch" href="/assets/js/44.6d6b490f.js"><link rel="prefetch" href="/assets/js/45.6e72b451.js"><link rel="prefetch" href="/assets/js/46.83adc1c7.js"><link rel="prefetch" href="/assets/js/47.c0739f9e.js"><link rel="prefetch" href="/assets/js/48.486aa01d.js"><link rel="prefetch" href="/assets/js/49.cb533cd9.js"><link rel="prefetch" href="/assets/js/5.2a3cb78a.js"><link rel="prefetch" href="/assets/js/50.214a19f7.js"><link rel="prefetch" href="/assets/js/51.2da1f9b3.js"><link rel="prefetch" href="/assets/js/52.160ef6ac.js"><link rel="prefetch" href="/assets/js/53.abb8683d.js"><link rel="prefetch" href="/assets/js/54.e771d750.js"><link rel="prefetch" href="/assets/js/55.101f9d21.js"><link rel="prefetch" href="/assets/js/56.a6c77aef.js"><link rel="prefetch" href="/assets/js/57.e598faf4.js"><link rel="prefetch" href="/assets/js/58.1b67f29b.js"><link rel="prefetch" href="/assets/js/59.544baea2.js"><link rel="prefetch" href="/assets/js/6.9af8e797.js"><link rel="prefetch" href="/assets/js/60.653a2a63.js"><link rel="prefetch" href="/assets/js/61.4fab63be.js"><link rel="prefetch" href="/assets/js/62.f6b69c7b.js"><link rel="prefetch" href="/assets/js/63.e7fe1ccd.js"><link rel="prefetch" href="/assets/js/64.092c5833.js"><link rel="prefetch" href="/assets/js/65.f42b483e.js"><link rel="prefetch" href="/assets/js/66.793c5a0a.js"><link rel="prefetch" href="/assets/js/67.9de934cb.js"><link rel="prefetch" href="/assets/js/68.7b11476a.js"><link rel="prefetch" href="/assets/js/69.a3287667.js"><link rel="prefetch" href="/assets/js/7.48eae51f.js"><link rel="prefetch" href="/assets/js/70.f1d5db45.js"><link rel="prefetch" href="/assets/js/71.7e884b8b.js"><link rel="prefetch" href="/assets/js/72.4cd7fade.js"><link rel="prefetch" href="/assets/js/73.39a7ba3e.js"><link rel="prefetch" href="/assets/js/74.9655bcf6.js"><link rel="prefetch" href="/assets/js/75.7cf906aa.js"><link rel="prefetch" href="/assets/js/76.d4c7082a.js"><link rel="prefetch" href="/assets/js/77.ee835514.js"><link rel="prefetch" href="/assets/js/78.8b963815.js"><link rel="prefetch" href="/assets/js/79.ebb80d16.js"><link rel="prefetch" href="/assets/js/80.a1cf985f.js"><link rel="prefetch" href="/assets/js/81.fffc4215.js"><link rel="prefetch" href="/assets/js/82.8581c092.js"><link rel="prefetch" href="/assets/js/83.72154880.js"><link rel="prefetch" href="/assets/js/84.8a5374d9.js"><link rel="prefetch" href="/assets/js/85.a2e8b00c.js"><link rel="prefetch" href="/assets/js/86.b44443de.js"><link rel="prefetch" href="/assets/js/87.472c0982.js"><link rel="prefetch" href="/assets/js/88.e340c33a.js"><link rel="prefetch" href="/assets/js/89.6c00a86f.js"><link rel="prefetch" href="/assets/js/90.88146b75.js"><link rel="prefetch" href="/assets/js/91.92fb1f62.js"><link rel="prefetch" href="/assets/js/92.1bcc506e.js"><link rel="prefetch" href="/assets/js/93.1b34b37a.js"><link rel="prefetch" href="/assets/js/94.61e4a041.js"><link rel="prefetch" href="/assets/js/95.eb6e5e54.js"><link rel="prefetch" href="/assets/js/96.54bf44bc.js"><link rel="prefetch" href="/assets/js/97.89858d79.js"><link rel="prefetch" href="/assets/js/98.bfea64f2.js"><link rel="prefetch" href="/assets/js/99.f8c432ed.js"><link rel="prefetch" href="/assets/js/vendors~docs-searchbar.0dc500a0.js"><link rel="prefetch" href="/assets/js/vendors~docsearch.e97360d2.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.bd798f36.css">
+  </head>
+  <body class="theme-mode-light">
+    <div id="app" data-server-rendered="true"><div class="theme-container sidebar-open have-rightmenu"><header class="navbar blur"><div title="目录" class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/img/logo.png" alt="Nick个人博客" class="logo"> <span class="site-name can-hide">Nick个人博客</span></a> <div class="links"><form id="search-form" role="search" class="meilisearch-search-wrapper search-box theme-false"><input id="meilisearch-search-input" class="search-query"></form> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">首页</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="技术分享" class="dropdown-title"><a href="/ios/" class="link-title">技术分享</a> <span class="title" style="display:none;">技术分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/ios/" class="nav-link">iOS开发</a></li><li class="dropdown-item"><!----> <a href="/interview/" class="nav-link">iOS面试题</a></li><li class="dropdown-item"><!----> <a href="/hexo/" class="nav-link">Hexo使用</a></li><li class="dropdown-item"><!----> <a href="/jenkins/" class="nav-link">Jenkins</a></li><li class="dropdown-item"><!----> <a href="/pod/" class="nav-link">Pod使用</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="索引" class="dropdown-title"><a href="/sharelink/" class="link-title">索引</a> <span class="title" style="display:none;">索引</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/network/" class="nav-link">网络好文</a></li><li class="dropdown-item"><!----> <a href="/categories/" class="nav-link">分类</a></li><li class="dropdown-item"><!----> <a href="/tags/" class="nav-link">标签</a></li><li class="dropdown-item"><!----> <a href="/archives/" class="nav-link">归档</a></li></ul></div></div><div class="nav-item"><a href="/poetry/" class="nav-link">古诗词欣赏</a></div><div class="nav-item"><a href="/about/" class="nav-link">关于</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="友链分享" class="dropdown-title"><a href="/share/" class="link-title">友链分享</a> <span class="title" style="display:none;">友链分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><h4>Projects🎈</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="/projects/" class="nav-link">✔ My Project ✨</a></li><li class="dropdown-subitem"><a href="/share/" class="nav-link">✔ 友 情 链 接 🎃</a></li><li class="dropdown-subitem"><a href="/life/www/" class="nav-link">✔ 个 人 网 站 ⭐️</a></li></ul></li><li class="dropdown-item"><h4>我的工具</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="https://ref.eryajf.net" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  备忘录清单
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/json2go" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  json2go
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/mdnice" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  微信MD编辑
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/highlight/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  代码高亮工具
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://leetcode-cn.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  LeetCode
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://cn.vuejs.org/v2/guide/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Vue.js
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.bootcdn.cn/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  BootCDN
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.linuxcool.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Linux命令大全
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></li></ul></div></div> <a href="https://github.com/nick5683/nick5683" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav></div></header> <div class="sidebar-mask"></div> <div class="sidebar-hover-trigger"></div> <aside class="sidebar" style="display:none;"><div class="blogger"><img src="/img/dengxia.gif"> <div class="blogger-info"><h3>Nick5683</h3> <span>行者常至，为者常成</span></div></div> <nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">首页</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="技术分享" class="dropdown-title"><a href="/ios/" class="link-title">技术分享</a> <span class="title" style="display:none;">技术分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/ios/" class="nav-link">iOS开发</a></li><li class="dropdown-item"><!----> <a href="/interview/" class="nav-link">iOS面试题</a></li><li class="dropdown-item"><!----> <a href="/hexo/" class="nav-link">Hexo使用</a></li><li class="dropdown-item"><!----> <a href="/jenkins/" class="nav-link">Jenkins</a></li><li class="dropdown-item"><!----> <a href="/pod/" class="nav-link">Pod使用</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="索引" class="dropdown-title"><a href="/sharelink/" class="link-title">索引</a> <span class="title" style="display:none;">索引</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/network/" class="nav-link">网络好文</a></li><li class="dropdown-item"><!----> <a href="/categories/" class="nav-link">分类</a></li><li class="dropdown-item"><!----> <a href="/tags/" class="nav-link">标签</a></li><li class="dropdown-item"><!----> <a href="/archives/" class="nav-link">归档</a></li></ul></div></div><div class="nav-item"><a href="/poetry/" class="nav-link">古诗词欣赏</a></div><div class="nav-item"><a href="/about/" class="nav-link">关于</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="友链分享" class="dropdown-title"><a href="/share/" class="link-title">友链分享</a> <span class="title" style="display:none;">友链分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><h4>Projects🎈</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="/projects/" class="nav-link">✔ My Project ✨</a></li><li class="dropdown-subitem"><a href="/share/" class="nav-link">✔ 友 情 链 接 🎃</a></li><li class="dropdown-subitem"><a href="/life/www/" class="nav-link">✔ 个 人 网 站 ⭐️</a></li></ul></li><li class="dropdown-item"><h4>我的工具</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="https://ref.eryajf.net" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  备忘录清单
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/json2go" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  json2go
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/mdnice" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  微信MD编辑
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/highlight/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  代码高亮工具
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://leetcode-cn.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  LeetCode
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://cn.vuejs.org/v2/guide/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Vue.js
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.bootcdn.cn/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  BootCDN
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.linuxcool.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Linux命令大全
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></li></ul></div></div> <a href="https://github.com/nick5683/nick5683" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>王飞飞不会飞_swift</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading open"><span>王飞飞不会飞_objc</span> <span class="arrow down"></span></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/pages/050200/" class="sidebar-link">对象的本质探索(上)</a></li><li><a href="/pages/050201/" class="sidebar-link">对象的本质探索(下)</a></li><li><a href="/pages/050202/" class="sidebar-link">类对象的结构(上)</a></li><li><a href="/pages/050203/" class="sidebar-link">类对象的结构(下)</a></li><li><a href="/pages/050204/" class="sidebar-link">class类结构cache_t源码详解</a></li><li><a href="/pages/050205/" class="sidebar-link">objc_msgSend之方法查找源码解析</a></li><li><a href="/pages/050206/" class="sidebar-link">objc_msgSend之动态解析和消息转发</a></li><li><a href="/pages/050207/" class="sidebar-link">启动流程 -dyld4源码解析</a></li><li><a href="/pages/050208/" class="sidebar-link">启动流程-objc源码解析</a></li><li><a href="/pages/050209/" class="sidebar-link">分类和关联对象源码解析</a></li><li><a href="/pages/050210/" class="sidebar-link">多线程之GCD</a></li><li><a href="/pages/050211/" class="sidebar-link">GCD之函数和死锁源码浅析</a></li><li><a href="/pages/050212/" aria-current="page" class="active sidebar-link">GCD函数解析(栅栏、信号量、一次性、调度组)</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level2"><a href="/pages/050212/#栅栏函数" class="sidebar-link">栅栏函数</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level4"><a href="/pages/050212/#思考-栅栏函数为什么栏不住全局并发队列" class="sidebar-link">思考：栅栏函数为什么栏不住全局并发队列</a></li><li class="sidebar-sub-header level4"><a href="/pages/050212/#栅栏函数实现多读单写" class="sidebar-link">栅栏函数实现多读单写</a></li></ul></li><li class="sidebar-sub-header level2"><a href="/pages/050212/#调度组" class="sidebar-link">调度组</a></li><li class="sidebar-sub-header level2"><a href="/pages/050212/#信号量" class="sidebar-link">信号量</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level4"><a href="/pages/050212/#信号量的使用" class="sidebar-link">信号量的使用</a></li><li class="sidebar-sub-header level4"><a href="/pages/050212/#源码解读" class="sidebar-link">源码解读</a></li><li class="sidebar-sub-header level5"><a href="/pages/050212/#dispatch-semaphore-create" class="sidebar-link">dispatchsemaphorecreate</a></li><li class="sidebar-sub-header level5"><a href="/pages/050212/#dispatch-semaphore-wait" class="sidebar-link">dispatchsemaphorewait</a></li><li class="sidebar-sub-header level5"><a href="/pages/050212/#dispatch-semaphore-signal" class="sidebar-link">dispatchsemaphoresignal</a></li></ul></li><li class="sidebar-sub-header level2"><a href="/pages/050212/#一次性代码" class="sidebar-link">一次性代码</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level4"><a href="/pages/050212/#一次性代码的使用" class="sidebar-link">一次性代码的使用</a></li><li class="sidebar-sub-header level4"><a href="/pages/050212/#一次性代码源码浅析" class="sidebar-link">一次性代码源码浅析</a></li></ul></li><li class="sidebar-sub-header level2"><a href="/pages/050212/#最后" class="sidebar-link">最后</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level3"><a href="/pages/050212/#参考链接🔗" class="sidebar-link">参考链接🔗</a></li></ul></li></ul></li><li><a href="/pages/050213/" class="sidebar-link">iOS中的锁</a></li><li><a href="/pages/050214/" class="sidebar-link">synchronized为何如此强大?</a></li><li><a href="/pages/050215/" class="sidebar-link">关于Block，你在第几层？</a></li><li><a href="/pages/050216/" class="sidebar-link">LLVM概述</a></li><li><a href="/pages/050217/" class="sidebar-link">架构模式</a></li><li><a href="/pages/050218/" class="sidebar-link">KVC和KVO理解</a></li><li><a href="/pages/050219/" class="sidebar-link">Runloop探究</a></li></ul></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>掘金articles收藏</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>好文摘录</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>Jenkins网络</span> <span class="arrow right"></span></p> <!----></section></li></ul> </aside> <div><main class="page"><div class="theme-vdoing-wrapper bg-style-6"><div class="articleInfo-wrap" data-v-057748f7><div class="articleInfo" data-v-057748f7><ul class="breadcrumbs" data-v-057748f7><li data-v-057748f7><a href="/" title="首页" class="iconfont icon-home router-link-active" data-v-057748f7></a></li> <li data-v-057748f7><a href="/network/#网络好文" data-v-057748f7>网络好文</a></li><li data-v-057748f7><a href="/network/#王飞飞不会飞_objc" data-v-057748f7>王飞飞不会飞_objc</a></li></ul> <div class="info" data-v-057748f7><div title="作者" class="author iconfont icon-touxiang" data-v-057748f7><a href="javascript:;" data-v-057748f7>王飞飞不会飞</a></div> <div title="创建时间" class="date iconfont icon-riqi" data-v-057748f7><a href="javascript:;" data-v-057748f7>2022-07-15</a></div> <!----></div></div></div> <!----> <div class="content-wrapper"><div class="right-menu-wrapper"><div class="right-menu-margin"><div class="right-menu-title">目录</div> <div class="right-menu-content"></div></div></div> <h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAABH1JREFUSA3tVl1oHFUUPmdmd2ltklqbpJDiNnXFmgbFktho7YMPNiJSSZM0+CAYSkUELVhM6YuwIPpgoOKDqOBDC0XE2CQoNtQXBUFTTcCi+Wlh1V2TQExsUzcltd3M9Tt3ZjZzZ2fT+OJTL8yeM+eee757fmeJbq//KQL8X3DUSFOcfr7cRsRtxNQMWueeVzOkaITIGqQHNg5y8+jNW9ldM7A6nTpAjuolUikAwq7CE3WcM2RRDz+XGVgN3FptU/aUSlvq9Pa3iZ1+sgAqJyyAFqkipd9dqiwHF3P65YycLWc/6sqGrvoEoIp6DOFaX5h6+dnfjkWprwqsPk0dUGq5vySwDImC10KxFHgGL1SWoc92O3eVht09qdXNH11I2SsTsJYqMWzihqGMi+A+Garf3BAuuLI5oGlULyNfyB/HYNujwktOfRrMr5t77NmevqaUopx0grnKAyvVpmwUDB4x6FPXuGvYLTDwWsejwgtgkYKPqRJg8SV6xaiZ3ZTppGneS4yfH5/66fZSDHv+QZci/+h5c5UHtpy67JUqGppM0sh0Nc1dW6/N1W5Yoqat8/TU/VnadmdeW2PLLSyh0cvxBs3KbqTmwYPpxN4do/mzE8nEpvX/UMu2Wbp74zUAK5q6WkHns7V0eWkdPbPzd3rxkTGybadYySumVzhcaJFbs5UrEkQ/+CK8gF5dnh/6ciIZ73gwQ927L1IitoxKLXYP3SjYdOrHHfTZhRRlFyrorafPk20B3HPD1y2G3qKZME5Jcf3t/HUC13/8tSd++vqFveMUTwAUxSUFI1QekR1+bIze3D9MF2aq6cPvG72CgnldWCFqyRw3lwH8ZMerjTD9ElRO7Gv44wNpC90aASqGfVlz/Rx17srQ57/UU26hkhQqUB7dBR71WmzQhHUnblGmVOEw0jhbV1n9OlXUDCIRGaNV5Jp43N516fN7JmnTHdfp7Hgy0luO4aMhtkLL8Bi3bUWYvzh5Mn1dTxrL6QmGuRhGL/TiTTxRoEdTszSaq9GR0NGA3KdkOz3hqSV3MIDhQ5IVX/Ivx3umBti2es2h4eZby7x8br1rkf7Mo90AqC8aQ3sJeNzqFRu+vSANAQe3PL7l0HGOAdwDCeZYvNKeoZp1Qfs6Aipndh86HmFRi0LAnEO47wsqM6cdfjh3jBPUzhZy7nvlUfFsamED1VQt6aISHVymXZ/B2aCtIG8AI8xfobj2d3en1wWVhOeHELKmLQ1s211s88comkv4UCwWyF787mJdYXtNfhKAXVqnKTq8QZvGAGGOfaTo5pGZ/PwbUCr5+DPr/1J92JNHr9aOl/F3iI5+O1nfybsGxoimvZ3ViWSluDITw3P37mypheDIPY0tw7+O/5ApbkYw+zpfaUVu32Pi98+defdUhEpZkRFq0aqyNh9FuL9hpYbEm6iwi0z2REd09ZmyENEbuhjDWzKvZXTqKYaBIr3tt5kuPtQBZFvEUwHt60vfCNu41XsksH9Ij1BMMz1Y0OOunHNShFIP5868g5zeXmuLwL9T4b6Q2+KejgAAAABJRU5ErkJggg==">GCD函数解析(栅栏、信号量、一次性、调度组)<!----></h1> <div class="page-slot page-slot-top"><div style="
+  color:#f56c6c;
+  letter-spacing:0;
+  background: #fef0f0;
+  border-radius: 4px;
+  border: solid 1px;
+  display: block;
+  width: 50%;
+  text-align: center;
+  margin: 0 auto;
+  padding: 10px 0;
+  box-sizing: border-box;
+">
+  文章发布较早，内容可能过时，阅读注意甄别。
+</div></div> <div class="theme-vdoing-content content__default"><h1 id="ios八股文-十三-gcd函数解析-栅栏、信号量、一次性、调度组"><a href="#ios八股文-十三-gcd函数解析-栅栏、信号量、一次性、调度组" class="header-anchor">#</a> iOS八股文（十三）GCD函数解析（栅栏、信号量、一次性、调度组）</h1> <p><a href="https://juejin.cn/user/352291371355911/posts" target="_blank" rel="noopener noreferrer">王飞飞不会飞<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></p> <p>2022-05-29 12:49372</p> <p>之前的两篇文章对GCD队列和调度函数进行了解析。本文将继续讲解GCD里面一些使用率较低的函数的使用。</p> <h2 id="栅栏函数"><a href="#栅栏函数" class="header-anchor">#</a> 栅栏函数</h2> <p>我们在开发中经常会使用到<code>并发队列</code>+<code>异步函数</code>，来开启新线程去完成耗时任务，但这样的操作存在一个漏洞，耗时任务的执行会呈现无序性，从而淡化队列的概念，而在特定的情况下，个别任务执行的条件是前置任务完成。这种情况使用并发队列+异步函数是无法实现的，这时候就需<code>要栅栏函数</code>出马了。</p> <p>使用<code>dispatch_barrier_async</code>添加的任务，会将队列里面的任务分成3部分，<code>dispatch_barrier_async</code>添加之前的所有任务，会异步执行，一直到最后一个任务完成再执行<code>dispatch_barrier_async</code>添加的任务，该任务执行完成后，再异步执行 <code>dispatch_barrier_async</code>添加之后的所有任务。<code>dispatch_barrier_async</code>添加的任务像一个栅栏一样把队列里面的任务划分开。</p> <p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cc61f573f306401f9a9d3baa66a2af04~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)barrier {
+    dispatch_queue_t concurrentQueue = dispatch_queue_create(&quot;com.osDemo.concurrent&quot;, DISPATCH_QUEUE_CONCURRENT);
+    dispatch_async(concurrentQueue, ^{
+        usleep(20);
+        NSLog(@&quot;任务1---%@&quot;,[NSThread currentThread]);
+    });
+    dispatch_async(concurrentQueue, ^{
+        usleep(30);
+        NSLog(@&quot;任务3---%@&quot;,[NSThread currentThread]);
+    });
+    dispatch_async(concurrentQueue, ^{
+        usleep(40);
+        NSLog(@&quot;任务3---%@&quot;,[NSThread currentThread]);
+    });
+    dispatch_barrier_async(concurrentQueue, ^{
+        usleep(40);
+        NSLog(@&quot;任务4---%@&quot;,[NSThread currentThread]);
+    });
+    
+    dispatch_async(concurrentQueue, ^{
+        usleep(40);
+        NSLog(@&quot;任务5---%@&quot;,[NSThread currentThread]);
+    });
+    dispatch_async(concurrentQueue, ^{
+        usleep(40);
+        NSLog(@&quot;任务6---%@&quot;,[NSThread currentThread]);
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br></div></div><p>执行结果永远是任务4⃣️再任务1⃣️2⃣️3⃣️之后，任务5⃣️6⃣️再任务4⃣️之后。</p> <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d3666557efd148a281ffdd99ff0ac784~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"> 在使用栅栏函数的时候要注意，栅栏函数只有配合自定义的并发队列才有效果。<a href="https://juejin.cn/post/7102338284352700423" target="_blank" rel="noopener noreferrer">上文中<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>我们看了同步函数的源码中，如果是串行队列，底层会自动调用<code>barrier</code>的函数。我们也可以思考一下，栅栏函数的目的是让队列里的任务乱中有序，而串行队列的<code>dq_witdh = 1</code>,人家本来就排着队，秩序非常好，还需要栅栏函数么？</p> <h4 id="思考-栅栏函数为什么栏不住全局并发队列"><a href="#思考-栅栏函数为什么栏不住全局并发队列" class="header-anchor">#</a> 思考：栅栏函数为什么栏不住全局并发队列</h4> <p>在栅栏函数的使用过程中，我们发现栅栏函数无法栏住全局并发队列。个人任务，在全局并发队列中不仅有开发者的任务，还有系统的任务，如果我们用我们的任务去栏住系统的任务，可能会导致一些未知的错误。栅栏函数对全局并发队列无效，所以我们在开发的时候一定要注意。</p> <h4 id="栅栏函数实现多读单写"><a href="#栅栏函数实现多读单写" class="header-anchor">#</a> 栅栏函数实现多读单写</h4> <p>栅栏函数实现多读单写，这是栅栏函数最典型的应用，我在面试的时候确实也碰到了让手写代码的。</p> <p>需求分析： 读写异步，读写互斥，写写互斥，读读可并行。</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>//栅栏函数实现多读单写
+- (void)initReadWrite {
+    self.readWriteQueue = dispatch_queue_create(&quot;com.demo.readWrite&quot;, DISPATCH_QUEUE_CONCURRENT);
+}
+
+- (void)write:(NSString *)str {
+    dispatch_barrier_async(self.readWriteQueue, ^{
+        usleep(40);
+        NSLog(@&quot;我是一个写任务&quot;);
+    });
+}
+
+- (void)readWithId:(NSString *)taskId completion:(void (^)(NSString *str, NSError *error))completion{
+    dispatch_async(self.readWriteQueue, ^{
+        usleep(40);
+        NSLog(@&quot;我是一个读任务&quot;);
+        completion(@&quot;result&quot;,nil);
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br></div></div><p>注意：这里如果有多个读任务，再有一个写任务进来的时候，写任务会等读任务都完成了，再进行写操作，反之，如果队列里面有多个写任务，他们会一一执行完成，再读任务进入后会等写任务执行完，并发执行读任务。</p> <h2 id="调度组"><a href="#调度组" class="header-anchor">#</a> 调度组</h2> <p>再开发过程中，经常遇到一个页面里面有多个请求，而这多个请求之间还有关联关系。以一个视频播放页面为例，上一级页面传入参数为节目ID，需要从A接口获取视频播放的地址，从B接口获取节目的信息，从C接口获取大数据推荐节目表。需要等这3个接口的数据都回来才能展示UI。 这时候就需要我们的调度组来接受所有任务完成的回调了。</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)groupTest01 {
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    [self asyncInvoke:^{
+        NSLog(@&quot;网络请求A回来了&quot;);
+        dispatch_group_leave(group);
+    }];
+    dispatch_group_enter(group);
+    [self asyncInvoke:^{
+        NSLog(@&quot;网络请求B回来了&quot;);
+        dispatch_group_leave(group);
+    }];
+    
+    dispatch_group_enter(group);
+    [self asyncInvoke:^{
+        NSLog(@&quot;网络请求C回来了&quot;);
+        dispatch_group_leave(group);
+    }];
+    
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        NSLog(@&quot;绘制ui&quot;);
+    });
+}
+
+//模仿异步执行
+- (void)asyncInvoke:(dispatch_block_t)block {
+    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+    dispatch_async(queue, block);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br></div></div><p>这种情况是<code>AFN(示例中使用asyncInvoke模拟)</code>已经去管理了线程的调度，如果需要自己去操作队列，调度组还有一种使用的方式：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>//任务1，任务2在子线程并发执行，任务3等任务1和任务2完成后再在子线程执行
+- (void)groupTest02 {
+    dispatch_group_t group = dispatch_group_create();
+    
+    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+    
+    dispatch_group_async(group, queue, ^{
+        for (int i = 0 ; i &lt; 10; i++) {
+            NSLog(@&quot;%s-任务 1 - %@&quot;,__func__, [NSThread currentThread]);
+        }
+    });
+    
+    dispatch_group_async(group, queue, ^{
+        for (int i = 0 ; i &lt; 15; i++) {
+            NSLog(@&quot;%s-任务 2 - %@&quot;,__func__, [NSThread currentThread]);
+        }
+    });
+    
+    dispatch_group_notify(group, queue, ^{
+        NSLog(@&quot; %@&quot;, [NSThread currentThread]);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            for (int i = 0 ; i &lt; 5; i++) {
+                NSLog(@&quot;%s-任务 3 - %@&quot;,__func__, [NSThread currentThread]);
+            }
+        });
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br></div></div><h2 id="信号量"><a href="#信号量" class="header-anchor">#</a> 信号量</h2> <p><code>dispatch_semaphore_t</code>的常用方法有</p> <ul><li><code>dispatch_semaphore_create</code>创建信号量</li> <li><code>dispatch_semaphore_wait</code> 等待信号量</li> <li><code>dispatch_semaphore_signal</code> 释放信号量</li></ul> <p>使用<code>dispatch_semaphore_create</code>和一个初始值来创建一个信号量，当<code>dispatch_semaphore_wait</code>的时候，如果这个初始值大于0，初始值减1，代码继续往下执行，如果值等于0 则代码等待（忙等），知道值大于0的时候再减1继续执行，当<code>dispatch_semaphore_signal</code>的时候，信号量的值加1。</p> <h4 id="信号量的使用"><a href="#信号量的使用" class="header-anchor">#</a> 信号量的使用</h4> <p>下面代码没有使用信号量的时候，值会非常大。</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)noSemaphore {
+    __block int a = 0;
+    while (a &lt; 5) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            NSLog(@&quot;里面的a的值：%d-----%@&quot;, a, [NSThread currentThread]);
+            a++;
+        });
+    }
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2), dispatch_get_global_queue(0, 0), ^{
+        NSLog(@&quot;外面的a的值：%d&quot;, a);
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br></div></div><p>使用信号量控制：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)semaphore {
+    
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+        __block int a = 0;
+        while (a &lt; 5) {
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                NSLog(@&quot;里面的a的值：%d-----%@&quot;, a, [NSThread currentThread]);
+                dispatch_semaphore_signal(semaphore);
+                a++;
+            });
+            dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+        }
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2), dispatch_get_global_queue(0, 0), ^{
+        NSLog(@&quot;外面的a的值：%d&quot;, a);
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br></div></div><p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/19b1f855444e4a2fa81853228ebc2c1a~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"> 可以看到，这时候再并发队列里面的任务都在一个线程里面执行了，而且值也能确定了。</p> <p>这就体现了信号量的一个作用--控制并发队列的数量。例如：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>//信号量控制并发队列线程数量
+- (void)semaphoreControlThreadCount {
+    dispatch_queue_t concurrentQueue = dispatch_queue_create(&quot;com.osDemo.semaphore.queue&quot;, DISPATCH_QUEUE_CONCURRENT);
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(2);
+    for (int i = 0; i &lt; 10; i++) {
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+        dispatch_async(concurrentQueue, ^{
+            usleep(arc4random_uniform(1000));
+            NSLog(@&quot;做完了一个耗时任务%@&quot;,[NSThread currentThread]);
+            dispatch_semaphore_signal(semaphore);
+        });
+    }
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br></div></div><p>执行结果：</p> <p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c1c3ac8fd07d4d91af9866deba6bb5f3~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"> 可以看到“耗时任务”只在4⃣️、7⃣️两个线程内执行。通过信号量，我们把全局并发队列的里面的任务放到指定数量的线程中执行。</p> <p>⚠️：使用信号量的时候一定要注意<code>signal</code>和<code>wait</code>要<code>一一对应</code>，不然有可能导致崩溃。</p> <h4 id="源码解读"><a href="#源码解读" class="header-anchor">#</a> 源码解读</h4> <p>我们来看看dispatch_semaphore的这三个方法的源码实现。</p> <h5 id="dispatch-semaphore-create"><a href="#dispatch-semaphore-create" class="header-anchor">#</a> dispatch_semaphore_create</h5> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>dispatch_semaphore_t
+dispatch_semaphore_create(intptr_t value)
+{
+	dispatch_semaphore_t dsema;
+
+	// If the internal value is negative, then the absolute of the value is
+	// equal to the number of waiting threads. Therefore it is bogus to
+	// initialize the semaphore with a negative value.
+	//初始值必须大于等于0
+	if (value &lt; 0) {
+		return DISPATCH_BAD_INPUT;
+	}
+	//开辟内存
+	dsema = _dispatch_object_alloc(DISPATCH_VTABLE(semaphore),
+			sizeof(struct dispatch_semaphore_s));
+	dsema-&gt;do_next = DISPATCH_OBJECT_LISTLESS;
+	dsema-&gt;do_targetq = _dispatch_get_default_queue(false);
+	//保存初始值
+	dsema-&gt;dsema_value = value;
+	//初始化方法
+	_dispatch_sema4_init(&amp;dsema-&gt;dsema_sema, _DSEMA4_POLICY_FIFO);
+	dsema-&gt;dsem_orig = value;
+	return dsema;
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br></div></div><ul><li>首先如果信号为<code>小于0</code>，则返回一个<code>DISPATCH_BAD_INPUT</code>类型对象，也就是返回个<code>_Nonnull</code></li> <li>如果信号<code>大于等于0</code>，就会<code>dispatch_semaphore_t</code>对象<code>dsema</code>进行初始化，并返回<code>dsema</code>对象</li></ul> <h5 id="dispatch-semaphore-wait"><a href="#dispatch-semaphore-wait" class="header-anchor">#</a> dispatch_semaphore_wait</h5> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>intptr_t
+dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout)
+{
+	long value = os_atomic_dec2o(dsema, dsema_value, acquire);
+	if (likely(value &gt;= 0)) {
+		return 0;
+	}
+	return _dispatch_semaphore_wait_slow(dsema, timeout);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br></div></div><ul><li>对信号量的值<code>-1</code>，如果值<code>大于等于0</code>（原来的值大于0），啥也不干。</li> <li>如<code>果-1以后的值小于0</code>，执行<code>_dispatch_semaphore_wait_slow</code>。</li></ul> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>DISPATCH_NOINLINE
+static intptr_t
+_dispatch_semaphore_wait_slow(dispatch_semaphore_t dsema,
+		dispatch_time_t timeout)
+{
+	long orig;
+
+	_dispatch_sema4_create(&amp;dsema-&gt;dsema_sema, _DSEMA4_POLICY_FIFO);
+	switch (timeout) {
+	default:
+		if (!_dispatch_sema4_timedwait(&amp;dsema-&gt;dsema_sema, timeout)) {
+			break;
+		}
+		// Fall through and try to undo what the fast path did to
+		// dsema-&gt;dsema_value
+	case DISPATCH_TIME_NOW:
+		orig = dsema-&gt;dsema_value;
+		while (orig &lt; 0) {
+			if (os_atomic_cmpxchgv2o(dsema, dsema_value, orig, orig + 1,
+					&amp;orig, relaxed)) {
+				return _DSEMA4_TIMEOUT();
+			}
+		}
+		// Another thread called semaphore_signal().
+		// Fall through and drain the wakeup.
+	case DISPATCH_TIME_FOREVER:
+		_dispatch_sema4_wait(&amp;dsema-&gt;dsema_sema);
+		break;
+	}
+	return 0;
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br></div></div><ul><li>这里对传入的<code>timeout</code>进行了判断，我们一般都是使用的<code>DISPATCH_TIME_FOREVER</code></li> <li>执行<code>_dispatch_sema4_wait</code></li></ul> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>_dispatch_sema4_wait(_dispatch_sema4_t *sema)
+{
+	kern_return_t kr;
+	do {
+		kr = semaphore_wait(*sema);
+	} while (kr == KERN_ABORTED);
+	DISPATCH_SEMAPHORE_VERIFY_KR(kr);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br></div></div><ul><li>这里进行了<code>do-while</code>循环，这个♻️就相当于<code>忙等</code>。</li></ul> <p>所以回到最初，如果<code>wait</code>的时候，信号量的值<code>-1之后小于0</code>，将会<code>等待</code>。</p> <h5 id="dispatch-semaphore-signal"><a href="#dispatch-semaphore-signal" class="header-anchor">#</a> dispatch_semaphore_signal</h5> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>DISPATCH_NOINLINE
+intptr_t
+_dispatch_semaphore_signal_slow(dispatch_semaphore_t dsema)
+{
+	_dispatch_sema4_create(&amp;dsema-&gt;dsema_sema, _DSEMA4_POLICY_FIFO);
+	_dispatch_sema4_signal(&amp;dsema-&gt;dsema_sema, 1);
+	return 1;
+}
+
+intptr_t
+dispatch_semaphore_signal(dispatch_semaphore_t dsema)
+{
+	long value = os_atomic_inc2o(dsema, dsema_value, release);
+	if (likely(value &gt; 0)) {
+		return 0;
+	}
+	if (unlikely(value == LONG_MIN)) {
+		DISPATCH_CLIENT_CRASH(value,
+				&quot;Unbalanced call to dispatch_semaphore_signal()&quot;);
+	}
+	return _dispatch_semaphore_signal_slow(dsema);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br></div></div><ul><li>首先信号量的值<code>+1</code></li> <li>如果加完，值<code>大于0</code>，直接<code>返回</code>。</li> <li>否则执行 <code>_dispatch_semaphore_signal_slow</code></li></ul> <h2 id="一次性代码"><a href="#一次性代码" class="header-anchor">#</a> 一次性代码</h2> <p>我看有很多文章中把这个<code>dispatch_once</code>叫做<code>单例</code>。其实个人认为是个错误的称呼，正确应该叫<code>一次性代码</code>，单例只是其中的一个应用。</p> <h4 id="一次性代码的使用"><a href="#一次性代码的使用" class="header-anchor">#</a> 一次性代码的使用</h4> <p>在平时的开发中，一次性代码的使用主要有两方面，单例的初始化和方法交换保证只交换一次，例如</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>+ (ClassType *)sharedManager {
+    static ClassType *sharedManager = nil;
+    static dispatch_once_t oneToken;
+    dispatch_once(&amp;oneToken,^{
+        sharedManager = [[ClassType alloc] init];
+    });
+    return sharedManager;
+}
++ (void)load {
+    static dispatch_once_t dispatchOnce;
+    dispatch_once(&amp;dispatchOnce, ^{
+        Class cls = [self class];
+        SEL originalSel = @selector(viewDidLoad);
+        SEL swizzledSel = @selector(viewDidLoadSwizzled);
+        Method originalMethod = class_getClassMethod(cls, originalSel);
+        Method swizzledMethod = class_getClassMethod(cls, swizzledSel);
+        method_exchangeImplementations(originalMethod, swizzledMethod);
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br></div></div><p>可以看到通过一次性代码，我们可以确保代码在运行的过程中只运行一次。那么底层是如何实现的呢？这就需要我们在<a href="https://opensource.apple.com/source/libdispatch/" target="_blank" rel="noopener noreferrer">libdispatch源码<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>中去寻找答案。</p> <h4 id="一次性代码源码浅析"><a href="#一次性代码源码浅析" class="header-anchor">#</a> 一次性代码源码浅析</h4> <p>直接来到一次性代码的实现</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>DISPATCH_NOINLINE
+void
+dispatch_once_f(dispatch_once_t *val, void *ctxt, dispatch_function_t func)
+{
+	dispatch_once_gate_t l = (dispatch_once_gate_t)val;
+
+#if !DISPATCH_ONCE_INLINE_FASTPATH || DISPATCH_ONCE_USE_QUIESCENT_COUNTER
+	uintptr_t v = os_atomic_load(&amp;l-&gt;dgo_once, acquire);
+	if (likely(v == DLOCK_ONCE_DONE)) {
+		return;
+	}
+#if DISPATCH_ONCE_USE_QUIESCENT_COUNTER
+        //已经完成分支
+	if (likely(DISPATCH_ONCE_IS_GEN(v))) {
+		return _dispatch_once_mark_done_if_quiesced(l, v);
+	}
+#endif
+#endif
+        //未执行过分支
+	if (_dispatch_once_gate_tryenter(l)) {
+		return _dispatch_once_callout(l, ctxt, func);
+	}
+        //正在别的线程执行分支
+	return _dispatch_once_wait(l);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br></div></div><p>我们可以将代码分为3个分支，逐步来解析。 这里有个宏定义<code>DISPATCH_ONCE_USE_QUIESCENT_COUNTER</code>：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>#if defined(__x86_64__) || defined(__i386__) || defined(__s390x__)
+#define DISPATCH_ONCE_USE_QUIESCENT_COUNTER 0
+#elif __APPLE__
+#define DISPATCH_ONCE_USE_QUIESCENT_COUNTER 1
+#else
+#define DISPATCH_ONCE_USE_QUIESCENT_COUNTER 0
+#endif
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br></div></div><p>可以看到如果<code>是苹果系统</code>，直接是<code>1</code>，所以我们需要看<code>#if DISPATCH_ONCE_USE_QUIESCENT_COUNTER</code>下面的逻辑。条件版判里面的宏定义如下：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>#if DISPATCH_ONCE_USE_QUIESCENT_COUNTER
+//设置已经完成
+#define DISPATCH_ONCE_MAKE_GEN(gen)  (((gen) &lt;&lt; 2) + DLOCK_FAILED_TRYLOCK_BIT)
+//判断是否完成
+#define DISPATCH_ONCE_IS_GEN(gen)    (((gen) &amp; 3) == DLOCK_FAILED_TRYLOCK_BIT)
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br></div></div><p>这里就体现出了，位运算的巧妙了。看设置已经完成的宏，是在<code>callout</code>流程里面调用的<code>左移2位</code>，然后 <code>+ 0x10（DLOCK_FAILED_TRYLOCK_BIT）</code>，如果执行过次操作，下面的判断一定是<code>YES</code>，下面的判断是<code>与0x11</code>，即获取低2位值，看是否等于<code>0x10</code>。</p> <p>在看未执行分支，便可以找到使用已经完成宏的调用：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>DISPATCH_NOINLINE
+static void
+_dispatch_once_callout(dispatch_once_gate_t l, void *ctxt,
+		dispatch_function_t func)
+{
+        //执行block
+	_dispatch_client_callout(ctxt, func);
+        //设置执行状态
+	_dispatch_once_gate_broadcast(l);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br></div></div><p><code>_dispatch_client_callout</code> 实现</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>
+#undef _dispatch_client_callout
+DISPATCH_NOINLINE
+void
+_dispatch_client_callout(void *ctxt, dispatch_function_t f)
+{
+	_dispatch_get_tsd_base();
+	void *u = _dispatch_get_unwind_tsd();
+	if (likely(!u)) return f(ctxt);
+	_dispatch_set_unwind_tsd(NULL);
+	f(ctxt);
+	_dispatch_free_unwind_tsd();
+	_dispatch_set_unwind_tsd(u);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br></div></div><p><code>_dispatch_once_gate_broadcast</code> 实现</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>DISPATCH_ALWAYS_INLINE
+static inline void
+_dispatch_once_gate_broadcast(dispatch_once_gate_t l)
+{
+	dispatch_lock value_self = _dispatch_lock_value_for_self();
+	uintptr_t v;
+#if DISPATCH_ONCE_USE_QUIESCENT_COUNTER
+        //获取已经完成的值
+	v = _dispatch_once_mark_quiescing(l);
+#else
+	v = _dispatch_once_mark_done(l);
+#endif
+	if (likely((dispatch_lock)v == value_self)) return;
+	_dispatch_gate_broadcast_slow(&amp;l-&gt;dgo_gate, (dispatch_lock)v);
+}
+DISPATCH_ALWAYS_INLINE
+static inline uintptr_t
+_dispatch_once_mark_quiescing(dispatch_once_gate_t dgo)
+{
+        //线程安全
+	return os_atomic_xchg(&amp;dgo-&gt;dgo_once, _dispatch_once_generation(), release);
+}
+DISPATCH_ALWAYS_INLINE
+static inline uintptr_t
+_dispatch_once_generation(void)
+{
+    uintptr_t value;
+    value = *(volatile uintptr_t *)_COMM_PAGE_CPU_QUIESCENT_COUNTER;
+    //这个宏 与运算👍
+    return (uintptr_t)DISPATCH_ONCE_MAKE_GEN(value);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br></div></div><p><code>DISPATCH_ONCE_MAKE_GEN</code>这个便是👆的设置已经完成的值。</p> <p>一次性代码的原理：</p> <ul><li>使用<code>dispatch_once_t</code>来标记<code>block执行</code>的状态。</li> <li>如果是未被执行状态，直接执行。</li> <li>如果是已经执行过，直接返回。</li> <li>如果正在被其他线程执行，等待。</li></ul> <h2 id="最后"><a href="#最后" class="header-anchor">#</a> 最后</h2> <p>其实GCD中还有很多实用且方便的函数，例如<code>dispatch_after</code>、<code>dispatch_timer</code>、<code>disptch_apply</code>、<code>disptch_source</code>等。由于时间和篇幅有限，这里就不一一列举，笔者也想在此抛个砖，希望有大佬愿意分享其他函数的底层原理。如有链接可以放评论区。当然，之后弄完整个八股文系列，希望还有余力能把剩下的几个也补充进来。特在此<code>mark todo</code>。</p> <h3 id="参考链接🔗"><a href="#参考链接🔗" class="header-anchor">#</a> 参考链接🔗</h3> <ul><li><a href="https://juejin.cn/post/6844903566398717960#heading-19" target="_blank" rel="noopener noreferrer">iOS多线程：『GCD』详尽总结<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li><a href="https://juejin.cn/post/6844904093488513037" target="_blank" rel="noopener noreferrer">iOS多线程：GCD详解<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li><a href="https://juejin.cn/post/6997666102201286693#heading-8" target="_blank" rel="noopener noreferrer">iOS 底层探究：多线程之GCD分析（单例、线程池、栅栏函数与信号量<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></div></div> <div class="page-slot page-slot-bottom"><div class="donation">
+  <button>打赏</button>
+  <div class="main">
+      <div class="pic">
+          <img src="https://nick5683.gitee.io/wxpayimg.png" alt="微信">
+          <img src="https://nick5683.gitee.io/alipayimg.png" alt="支付宝">
+      </div>
+  </div>
+</div></div> <div class="page-edit"><!----> <div class="tags"><a href="/tags/?tag=iOS" title="标签">#iOS</a></div> <div class="last-updated"><span class="prefix">上次更新:</span> <span class="time">2023/10/21, 18:03:38</span></div></div> <div class="page-nav-wapper"><!----> <div class="page-nav"><p class="inner"><span class="prev">
+        ←
+        <a href="/pages/050211/" class="prev">GCD之函数和死锁源码浅析</a></span> <span class="next"><a href="/pages/050213/">iOS中的锁</a>→
+      </span></p></div></div></div> <div class="article-list"><div class="article-title"><a href="/archives/" class="iconfont icon-bi">最近更新</a></div> <div class="article-wrapper"><dl><dd>01</dd> <dt><a href="/pages/020200/"><div>
+            iOS 闭包和Block的区别
+            <!----></div></a> <span class="date">01-28</span></dt></dl><dl><dd>02</dd> <dt><a href="/pages/031100/"><div>
+            Mac开发环境配置看这一篇就够了
+            <!----></div></a> <span class="date">10-26</span></dt></dl><dl><dd>03</dd> <dt><a href="/pages/050405/"><div>
+            关于 Swift Method Swizzling(iOS的hook机制使用
+            <!----></div></a> <span class="date">10-25</span></dt></dl> <dl><dd></dd> <dt><a href="/archives/" class="more">更多文章&gt;</a></dt></dl></div></div></main></div> <div class="footer"><div class="icons"><a href="https://gitee.com/nick5683" title="Gitee" target="_blank" class="iconfont icon-github"></a><a href="https://www.jianshu.com/u/cc31265bb1a0" title="简书" target="_blank" class="iconfont icon-jianshu"></a><a href="mailto:nick5683@qq.com" title="发邮件" target="_blank" class="iconfont icon-youjian"></a><a href="https://nick5683.gitee.io/rss.xml" title="订阅" target="_blank" class="iconfont icon-rss"></a></div> 
+  Theme by
+  <a href="https://github.com/xugaoyi/vuepress-theme-vdoing" target="_blank" title="本站主题">Vdoing</a> 
+    | Copyright © 2022-2025
+    <span>|</span></div> <div class="buttons"><div title="返回顶部" class="button blur go-to-top iconfont icon-fanhuidingbu" style="display:none;"></div> <div title="去评论" class="button blur go-to-comment iconfont icon-pinglun" style="display:none;"></div> <div title="主题模式" class="button blur theme-mode-but iconfont icon-zhuti"><ul class="select-box" style="display:none;"><li class="iconfont icon-zidong">
+          跟随系统
+        </li><li class="iconfont icon-rijianmoshi">
+          浅色模式
+        </li><li class="iconfont icon-yejianmoshi">
+          深色模式
+        </li><li class="iconfont icon-yuedu">
+          阅读模式
+        </li></ul></div></div> <!----> <!----> <!----></div><div class="global-ui"><canvas id="vuepress-canvas-cursor"></canvas><!----><div id="musicPlayer" data-v-445031a8><!----> <div class="bbox" data-v-445031a8><div class="pan" style="background-image:url(/assets/img/pan.07613e22.png);" data-v-445031a8><img src="" alt class="pan_c" data-v-445031a8></div> <div class="box" style="background-image:url();" data-v-445031a8><div class="music_shlter_2" style="background-image:url();" data-v-445031a8></div> <div class="music_shlter" style="background-image:url();" data-v-445031a8></div> <div class="music_shlter_3" data-v-445031a8></div> <div class="music_dis" data-v-445031a8><div class="dis_list" data-v-445031a8>···</div> <p class="music_title" data-v-445031a8></p> <p class="music_intro" data-v-445031a8>歌手: </p> <ul class="music_words" data-v-445031a8><div class="music_words_box" style="top:0px;" data-v-445031a8></div></ul></div> <div class="control_box" data-v-445031a8><div class="control_button" data-v-445031a8><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAACMCAYAAACksC0pAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALjSURBVHhe7doxbuswFETRSG68pVTZ+y+SJdmVE/GDC0hzBxnynoqpBGhIaoy84/vyBnu9Xv9ut9vH/HN5j8fj836/v88/Mc/n8+uca9RxHPgm2VUkwN2kNux4TiTA65Y+5nIL53m+5hI1nuMJLGeAgKu0xW42AwQEiv1/10bJBLhhC0198z2BBFtoueUC3I0BlkvdOLZQyGiHc4myhXJsoc2CG9YWSkgFeJ6nJYZgCy1nCy23XIC7tVBPYL/YhjVAwGiHc4mK/Uc+daX8FbZQ/YrfQEhqpGIwQEDqkzE2SiTA3X5GJHkCAcuVmN1aqIO95ZIb1gABqQD9GQG5XuxcsRyp4KSuUE8gwRZabrkAd2OA5Wyh5Rzs7WcLbRbcsLZQQipAB3shttByttByywW4Wwv1BPaLbVgDBDjYW84WWs5vYLnkjWOAgFSADvYuwBMISG1YWyhkvNi5RNlCIZaYcqkAx3MMEHC92LliOVLBSV2hnkBCasPGSowtlGELLWeAEFtoOQd7+9lCmwU3rC2UkApwjG54AgGpAG2hEFtoueUC3K2FegL7xTasAQJGO5xLlCMVEFtoOb+B5ZI3jgECUgE62LsATyAgtWFtoRBHKspZYsqlAhzPMUDA9WLniuVIBSd1hXoCCakNGysxtlCGLbScAUJsoeUc7O1nC20W3LC2UEIqwDG64QkEpAK0hUJsoeWWC3C3FuoJ7BfbsAYIGO1wLlGOVEBsoeX8BpZL3jgGCEgF6GDvAjyBgOVKzG4tNDVSEfsZsRtLTLlUgOM5Bgi4XuxcsRyp4KSuUE8gwRZabrkAd2OA5Wyh5Rzs7WcLbRbcsLZQQipAB3shttByttByywW4Wwv1BPaLbVgDBDjYW84Wql/xGwgZ85pziTNAQOqT4WDvAjyBgOVKzG4t1MHecskNa4CAVID+jIBcL3auWI5UcFJXqCeQYAstt1yAuzHAcrbQcg729rOFNstt2LfvHxY+GuRFc4rhAAAAAElFTkSuQmCC" alt class="control_icon" data-v-445031a8></div> <div class="progress" data-v-445031a8><div class="progress_c" style="width:0%;" data-v-445031a8><div class="progress_circle" data-v-445031a8><div class="progress_circle_c" data-v-445031a8></div></div></div></div></div></div> <video id="music" autoplay="autoplay" src="" name="media" data-v-445031a8></video></div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+    <script src="/assets/js/app.20c720c9.js" defer></script><script src="/assets/js/4.2c0aa082.js" defer></script><script src="/assets/js/2.5c62803a.js" defer></script><script src="/assets/js/166.ce47c2ee.js" defer></script><script src="/assets/js/43.273be00f.js" defer></script><script src="/assets/js/25.e8711eab.js" defer></script><script src="/assets/js/26.8841a5a6.js" defer></script>
+  </body>
+</html>

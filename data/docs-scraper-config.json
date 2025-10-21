@@ -1,0 +1,32 @@
+{
+    "index_uid": "wiki",
+    "sitemap_urls": ["https://nick5683.gitee.io/sitemap.xml"],
+    "start_urls": ["https://nick5683.gitee.io"],
+    "stop_urls": [
+      "https://nick5683.gitee.io/tags/",
+      "https://nick5683.gitee.io/lunbo/lunbo.html",
+      "https://nick5683.gitee.io/categories/",
+      "https://nick5683.gitee.io/rss.xml",
+      "https://nick5683.gitee.io/archives/"
+    ],
+    "selectors": {
+        "lvl0": {
+            "selector": "h1",
+            "global": true,
+            "default_value": "Documentation"
+        },
+        "lvl1": ".theme-vdoing-content h2",
+        "lvl2": ".theme-vdoing-content h3",
+        "lvl3": ".theme-vdoing-content h4",
+        "lvl4": ".theme-vdoing-content h5",
+        "lvl5": ".theme-vdoing-content h6",
+        "text": ".theme-vdoing-content p, .theme-vdoing-content li"
+    },
+    "strip_chars": " .,;:#",
+    "scrap_start_urls": true,
+    "selectors_exclude": ["iframe", ".katex-block", ".md-flowchart", ".md-mermaid", ".md-presentation.reveal.reveal-viewport", ".line-numbers-mode", ".code-group", ".footnotes", "footer.page-meta", ".page-nav", ".comments-wrapper"],
+    "custom_settings": {
+        "synonyms": {},
+        "stopWords": ["什么", "哪个", "谁", "这个", "那个", "这些", "那些", "是", "曾经", "存在", "有", "做", "直到", "同时", "的", "在", "通过", "为", "与", "关于", "反对", "之间", "进入", "通过", "期间", "之前", "之后", "上方", "下方", "到", "从", "上", "下", "进", "出", "开", "关", "任何", "两者", "每个", "少数", "更多", "大多数", "其他", "一些", "这样", "应该", "不"]
+    }
+}

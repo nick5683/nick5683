@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Runloop探究 | Nick个人博客</title>
+    <meta name="generator" content="VuePress 1.9.10">
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_3114978_qe0b39no76.css">
+    <script language="javascript" type="text/javascript" src="/js/pgmanor-self.js"></script>
+    <link rel="alternate" type="application/rss+xml" href="https://wiki.eryajf.net/rss.xml" title="Nick个人博客 RSS Feed">
+    <link rel="alternate" type="application/atom+xml" href="https://wiki.eryajf.net/feed.atom" title="Nick个人博客 Atom Feed">
+    <link rel="alternate" type="application/json" href="https://wiki.eryajf.net/feed.json" title="Nick个人博客 JSON Feed">
+    <meta name="description" content="王飞飞不会飞">
+    <meta name="image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/507d0d2dd0df487584cd0f94b5c7eeb7~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta name="twitter:title" content="Runloop探究">
+    <meta name="twitter:description" content="王飞飞不会飞">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/507d0d2dd0df487584cd0f94b5c7eeb7~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta name="twitter:url" content="https://wiki.eryajf.net/05.%E7%BD%91%E7%BB%9C%E5%A5%BD%E6%96%87/02.%E7%8E%8B%E9%A3%9E%E9%A3%9E%E4%B8%8D%E4%BC%9A%E9%A3%9E_objc/19.Runloop%E6%8E%A2%E7%A9%B6.html">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Runloop探究">
+    <meta property="og:description" content="王飞飞不会飞">
+    <meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/507d0d2dd0df487584cd0f94b5c7eeb7~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta property="og:url" content="https://wiki.eryajf.net/05.%E7%BD%91%E7%BB%9C%E5%A5%BD%E6%96%87/02.%E7%8E%8B%E9%A3%9E%E9%A3%9E%E4%B8%8D%E4%BC%9A%E9%A3%9E_objc/19.Runloop%E6%8E%A2%E7%A9%B6.html">
+    <meta property="og:site_name" content="Eryajf">
+    <meta property="article:published_time" content="2022-07-15T11:06:29.000Z">
+    <meta property="article:tag" content="iOS">
+    <meta itemprop="name" content="Runloop探究">
+    <meta itemprop="description" content="王飞飞不会飞">
+    <meta itemprop="image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/507d0d2dd0df487584cd0f94b5c7eeb7~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?">
+    <meta name="keywords" content="Nick5682,iOS,ios,Vue,vue,VUE,Jenkins,jenkins,Pod,pod,Hexo,hexo,面试,interview">
+    <meta name="baidu-site-verification" content="code-LTKHwOecxI">
+    <meta name="theme-color" content="#11a8cd">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <meta name="renderer" content="webkit">
+    
+    <link rel="preload" href="/assets/css/0.styles.bd798f36.css" as="style"><link rel="preload" href="/assets/js/app.20c720c9.js" as="script"><link rel="preload" href="/assets/js/4.2c0aa082.js" as="script"><link rel="preload" href="/assets/js/2.5c62803a.js" as="script"><link rel="preload" href="/assets/js/173.35ee0e44.js" as="script"><link rel="preload" href="/assets/js/43.273be00f.js" as="script"><link rel="preload" href="/assets/js/25.e8711eab.js" as="script"><link rel="preload" href="/assets/js/26.8841a5a6.js" as="script"><link rel="prefetch" href="/assets/js/1.8b42134a.js"><link rel="prefetch" href="/assets/js/100.273e5d60.js"><link rel="prefetch" href="/assets/js/101.a322debe.js"><link rel="prefetch" href="/assets/js/102.89f3aa16.js"><link rel="prefetch" href="/assets/js/103.d33e8e5b.js"><link rel="prefetch" href="/assets/js/104.a53e35d4.js"><link rel="prefetch" href="/assets/js/105.b5eb16a2.js"><link rel="prefetch" href="/assets/js/106.89a25bfa.js"><link rel="prefetch" href="/assets/js/107.d6eba5b6.js"><link rel="prefetch" href="/assets/js/108.3fe432b4.js"><link rel="prefetch" href="/assets/js/109.7b1e3cea.js"><link rel="prefetch" href="/assets/js/11.b0023e25.js"><link rel="prefetch" href="/assets/js/110.b80b96ee.js"><link rel="prefetch" href="/assets/js/111.b4a20c11.js"><link rel="prefetch" href="/assets/js/112.c8ff57e2.js"><link rel="prefetch" href="/assets/js/113.40c38e95.js"><link rel="prefetch" href="/assets/js/114.0486aa1c.js"><link rel="prefetch" href="/assets/js/115.14a484c9.js"><link rel="prefetch" href="/assets/js/116.d167f15e.js"><link rel="prefetch" href="/assets/js/117.3e4fc0c6.js"><link rel="prefetch" href="/assets/js/118.29473197.js"><link rel="prefetch" href="/assets/js/119.fbf66f57.js"><link rel="prefetch" href="/assets/js/12.824d0275.js"><link rel="prefetch" href="/assets/js/120.e53cc17e.js"><link rel="prefetch" href="/assets/js/121.58905329.js"><link rel="prefetch" href="/assets/js/122.dfb4fd60.js"><link rel="prefetch" href="/assets/js/123.183491fd.js"><link rel="prefetch" href="/assets/js/124.12d86ce4.js"><link rel="prefetch" href="/assets/js/125.3b63df17.js"><link rel="prefetch" href="/assets/js/126.7380545e.js"><link rel="prefetch" href="/assets/js/127.074bf599.js"><link rel="prefetch" href="/assets/js/128.432308f8.js"><link rel="prefetch" href="/assets/js/129.507970b7.js"><link rel="prefetch" href="/assets/js/13.2e9bba8c.js"><link rel="prefetch" href="/assets/js/130.c4f990fc.js"><link rel="prefetch" href="/assets/js/131.ae51432f.js"><link rel="prefetch" href="/assets/js/132.2c60c18a.js"><link rel="prefetch" href="/assets/js/133.2e146229.js"><link rel="prefetch" href="/assets/js/134.c933ccff.js"><link rel="prefetch" href="/assets/js/135.2cda8f14.js"><link rel="prefetch" href="/assets/js/136.85e02e48.js"><link rel="prefetch" href="/assets/js/137.99eacec5.js"><link rel="prefetch" href="/assets/js/138.2ce980a4.js"><link rel="prefetch" href="/assets/js/139.5f0a73ae.js"><link rel="prefetch" href="/assets/js/14.cd7f264f.js"><link rel="prefetch" href="/assets/js/140.49675fed.js"><link rel="prefetch" href="/assets/js/141.ee2f95cd.js"><link rel="prefetch" href="/assets/js/142.cafce0c6.js"><link rel="prefetch" href="/assets/js/143.fd2a612d.js"><link rel="prefetch" href="/assets/js/144.5bf96dd7.js"><link rel="prefetch" href="/assets/js/145.414004f2.js"><link rel="prefetch" href="/assets/js/146.8063aeb2.js"><link rel="prefetch" href="/assets/js/147.66d1c47d.js"><link rel="prefetch" href="/assets/js/148.95543355.js"><link rel="prefetch" href="/assets/js/149.8f45cde0.js"><link rel="prefetch" href="/assets/js/15.ba947f6b.js"><link rel="prefetch" href="/assets/js/150.f641077f.js"><link rel="prefetch" href="/assets/js/151.b22f5c46.js"><link rel="prefetch" href="/assets/js/152.79e5ba8f.js"><link rel="prefetch" href="/assets/js/153.5f6be56a.js"><link rel="prefetch" href="/assets/js/154.4c52e318.js"><link rel="prefetch" href="/assets/js/155.1f5d5688.js"><link rel="prefetch" href="/assets/js/156.68d9ce69.js"><link rel="prefetch" href="/assets/js/157.e6ea1a18.js"><link rel="prefetch" href="/assets/js/158.c8272022.js"><link rel="prefetch" href="/assets/js/159.d074b362.js"><link rel="prefetch" href="/assets/js/16.ed6191e8.js"><link rel="prefetch" href="/assets/js/160.3781e258.js"><link rel="prefetch" href="/assets/js/161.0357d15d.js"><link rel="prefetch" href="/assets/js/162.328e10b8.js"><link rel="prefetch" href="/assets/js/163.98563364.js"><link rel="prefetch" href="/assets/js/164.173b3a1c.js"><link rel="prefetch" href="/assets/js/165.e7d42eb3.js"><link rel="prefetch" href="/assets/js/166.ce47c2ee.js"><link rel="prefetch" href="/assets/js/167.acb5c275.js"><link rel="prefetch" href="/assets/js/168.cb188ef7.js"><link rel="prefetch" href="/assets/js/169.ddf9d744.js"><link rel="prefetch" href="/assets/js/17.bcfb01a1.js"><link rel="prefetch" href="/assets/js/170.efeb634a.js"><link rel="prefetch" href="/assets/js/171.05447490.js"><link rel="prefetch" href="/assets/js/172.f131942e.js"><link rel="prefetch" href="/assets/js/174.6ffeaf80.js"><link rel="prefetch" href="/assets/js/175.56f81767.js"><link rel="prefetch" href="/assets/js/176.d2f1a427.js"><link rel="prefetch" href="/assets/js/177.b4a77319.js"><link rel="prefetch" href="/assets/js/178.4fe474ef.js"><link rel="prefetch" href="/assets/js/179.13f3f2aa.js"><link rel="prefetch" href="/assets/js/18.70231b97.js"><link rel="prefetch" href="/assets/js/180.c484aa49.js"><link rel="prefetch" href="/assets/js/181.be7378d3.js"><link rel="prefetch" href="/assets/js/182.563a5506.js"><link rel="prefetch" href="/assets/js/183.e30c3153.js"><link rel="prefetch" href="/assets/js/184.74978185.js"><link rel="prefetch" href="/assets/js/185.f4152093.js"><link rel="prefetch" href="/assets/js/186.ea0e185a.js"><link rel="prefetch" href="/assets/js/187.8c0d212e.js"><link rel="prefetch" href="/assets/js/188.2f48cfb2.js"><link rel="prefetch" href="/assets/js/189.25e13088.js"><link rel="prefetch" href="/assets/js/19.6588cd3e.js"><link rel="prefetch" href="/assets/js/190.0109e793.js"><link rel="prefetch" href="/assets/js/191.5ca065e3.js"><link rel="prefetch" href="/assets/js/192.b955ec40.js"><link rel="prefetch" href="/assets/js/193.ccd0adc8.js"><link rel="prefetch" href="/assets/js/194.bd7eb342.js"><link rel="prefetch" href="/assets/js/195.48a6c676.js"><link rel="prefetch" href="/assets/js/196.871436e0.js"><link rel="prefetch" href="/assets/js/197.3b7a4e7b.js"><link rel="prefetch" href="/assets/js/198.aa66a35e.js"><link rel="prefetch" href="/assets/js/199.ff8c62a3.js"><link rel="prefetch" href="/assets/js/20.3dce3488.js"><link rel="prefetch" href="/assets/js/200.52b0a873.js"><link rel="prefetch" href="/assets/js/201.53c33553.js"><link rel="prefetch" href="/assets/js/202.ce7e600b.js"><link rel="prefetch" href="/assets/js/203.46193ec0.js"><link rel="prefetch" href="/assets/js/204.d932d8e2.js"><link rel="prefetch" href="/assets/js/205.9fc2961d.js"><link rel="prefetch" href="/assets/js/206.2c543107.js"><link rel="prefetch" href="/assets/js/207.b977e16a.js"><link rel="prefetch" href="/assets/js/208.16b40d49.js"><link rel="prefetch" href="/assets/js/209.e2afbc4a.js"><link rel="prefetch" href="/assets/js/21.807c689b.js"><link rel="prefetch" href="/assets/js/210.11047808.js"><link rel="prefetch" href="/assets/js/211.58015fa1.js"><link rel="prefetch" href="/assets/js/212.0441bec7.js"><link rel="prefetch" href="/assets/js/213.58db50e0.js"><link rel="prefetch" href="/assets/js/214.10d74081.js"><link rel="prefetch" href="/assets/js/215.10e8583d.js"><link rel="prefetch" href="/assets/js/216.e38ad3b1.js"><link rel="prefetch" href="/assets/js/217.6e94acbc.js"><link rel="prefetch" href="/assets/js/218.0ba913bd.js"><link rel="prefetch" href="/assets/js/219.53111950.js"><link rel="prefetch" href="/assets/js/22.1863116c.js"><link rel="prefetch" href="/assets/js/220.fc4050b3.js"><link rel="prefetch" href="/assets/js/221.64c1f97a.js"><link rel="prefetch" href="/assets/js/222.b558491b.js"><link rel="prefetch" href="/assets/js/223.af0aa9b1.js"><link rel="prefetch" href="/assets/js/224.3b5a6fea.js"><link rel="prefetch" href="/assets/js/225.3fce8e29.js"><link rel="prefetch" href="/assets/js/226.47d6343c.js"><link rel="prefetch" href="/assets/js/227.d89cff62.js"><link rel="prefetch" href="/assets/js/228.4c1c4af8.js"><link rel="prefetch" href="/assets/js/229.8924284e.js"><link rel="prefetch" href="/assets/js/23.663532d3.js"><link rel="prefetch" href="/assets/js/230.34238ff7.js"><link rel="prefetch" href="/assets/js/231.9d59b337.js"><link rel="prefetch" href="/assets/js/232.fd86d20a.js"><link rel="prefetch" href="/assets/js/233.6c6a231c.js"><link rel="prefetch" href="/assets/js/234.1856051a.js"><link rel="prefetch" href="/assets/js/235.8667fc48.js"><link rel="prefetch" href="/assets/js/236.d4d7eb76.js"><link rel="prefetch" href="/assets/js/237.37f646a0.js"><link rel="prefetch" href="/assets/js/238.62f796b6.js"><link rel="prefetch" href="/assets/js/239.505beb5e.js"><link rel="prefetch" href="/assets/js/24.d95b6231.js"><link rel="prefetch" href="/assets/js/240.c9f0be4e.js"><link rel="prefetch" href="/assets/js/241.0c196e3e.js"><link rel="prefetch" href="/assets/js/242.4983f58f.js"><link rel="prefetch" href="/assets/js/243.7655d378.js"><link rel="prefetch" href="/assets/js/244.d2dffc09.js"><link rel="prefetch" href="/assets/js/245.1b72d055.js"><link rel="prefetch" href="/assets/js/246.5a532244.js"><link rel="prefetch" href="/assets/js/247.27b3120f.js"><link rel="prefetch" href="/assets/js/248.aa577ae1.js"><link rel="prefetch" href="/assets/js/249.bad9a8b4.js"><link rel="prefetch" href="/assets/js/250.44f0f547.js"><link rel="prefetch" href="/assets/js/251.8efdc483.js"><link rel="prefetch" href="/assets/js/252.c91c1454.js"><link rel="prefetch" href="/assets/js/253.546bcf9b.js"><link rel="prefetch" href="/assets/js/254.1a2146e0.js"><link rel="prefetch" href="/assets/js/255.423f016b.js"><link rel="prefetch" href="/assets/js/256.bfe7b6df.js"><link rel="prefetch" href="/assets/js/257.006fb239.js"><link rel="prefetch" href="/assets/js/258.45dfb78d.js"><link rel="prefetch" href="/assets/js/259.8e94d423.js"><link rel="prefetch" href="/assets/js/260.74a459f2.js"><link rel="prefetch" href="/assets/js/261.1ff728c4.js"><link rel="prefetch" href="/assets/js/262.de99177b.js"><link rel="prefetch" href="/assets/js/263.55d47cf9.js"><link rel="prefetch" href="/assets/js/264.e758f510.js"><link rel="prefetch" href="/assets/js/265.2371cb8d.js"><link rel="prefetch" href="/assets/js/266.84a4f5f2.js"><link rel="prefetch" href="/assets/js/267.c97533d4.js"><link rel="prefetch" href="/assets/js/268.a0634a80.js"><link rel="prefetch" href="/assets/js/269.86f7f3cf.js"><link rel="prefetch" href="/assets/js/27.dc3342ad.js"><link rel="prefetch" href="/assets/js/270.a56d98b8.js"><link rel="prefetch" href="/assets/js/271.23d209b2.js"><link rel="prefetch" href="/assets/js/28.426e64f3.js"><link rel="prefetch" href="/assets/js/29.58b2a4f2.js"><link rel="prefetch" href="/assets/js/3.0cbfac7c.js"><link rel="prefetch" href="/assets/js/30.fad33956.js"><link rel="prefetch" href="/assets/js/31.7651bbca.js"><link rel="prefetch" href="/assets/js/32.d67bea38.js"><link rel="prefetch" href="/assets/js/33.fb731877.js"><link rel="prefetch" href="/assets/js/34.d3354751.js"><link rel="prefetch" href="/assets/js/35.a1d6dfa3.js"><link rel="prefetch" href="/assets/js/36.93c3f286.js"><link rel="prefetch" href="/assets/js/37.c4dedd04.js"><link rel="prefetch" href="/assets/js/38.d4c343d6.js"><link rel="prefetch" href="/assets/js/39.f36b6083.js"><link rel="prefetch" href="/assets/js/40.53f5e0a0.js"><link rel="prefetch" href="/assets/js/41.63518e36.js"><link rel="prefetch" href="/assets/js/42.87397db5.js"><link rel="prefetch" href="/assets/js/44.6d6b490f.js"><link rel="prefetch" href="/assets/js/45.6e72b451.js"><link rel="prefetch" href="/assets/js/46.83adc1c7.js"><link rel="prefetch" href="/assets/js/47.c0739f9e.js"><link rel="prefetch" href="/assets/js/48.486aa01d.js"><link rel="prefetch" href="/assets/js/49.cb533cd9.js"><link rel="prefetch" href="/assets/js/5.2a3cb78a.js"><link rel="prefetch" href="/assets/js/50.214a19f7.js"><link rel="prefetch" href="/assets/js/51.2da1f9b3.js"><link rel="prefetch" href="/assets/js/52.160ef6ac.js"><link rel="prefetch" href="/assets/js/53.abb8683d.js"><link rel="prefetch" href="/assets/js/54.e771d750.js"><link rel="prefetch" href="/assets/js/55.101f9d21.js"><link rel="prefetch" href="/assets/js/56.a6c77aef.js"><link rel="prefetch" href="/assets/js/57.e598faf4.js"><link rel="prefetch" href="/assets/js/58.1b67f29b.js"><link rel="prefetch" href="/assets/js/59.544baea2.js"><link rel="prefetch" href="/assets/js/6.9af8e797.js"><link rel="prefetch" href="/assets/js/60.653a2a63.js"><link rel="prefetch" href="/assets/js/61.4fab63be.js"><link rel="prefetch" href="/assets/js/62.f6b69c7b.js"><link rel="prefetch" href="/assets/js/63.e7fe1ccd.js"><link rel="prefetch" href="/assets/js/64.092c5833.js"><link rel="prefetch" href="/assets/js/65.f42b483e.js"><link rel="prefetch" href="/assets/js/66.793c5a0a.js"><link rel="prefetch" href="/assets/js/67.9de934cb.js"><link rel="prefetch" href="/assets/js/68.7b11476a.js"><link rel="prefetch" href="/assets/js/69.a3287667.js"><link rel="prefetch" href="/assets/js/7.48eae51f.js"><link rel="prefetch" href="/assets/js/70.f1d5db45.js"><link rel="prefetch" href="/assets/js/71.7e884b8b.js"><link rel="prefetch" href="/assets/js/72.4cd7fade.js"><link rel="prefetch" href="/assets/js/73.39a7ba3e.js"><link rel="prefetch" href="/assets/js/74.9655bcf6.js"><link rel="prefetch" href="/assets/js/75.7cf906aa.js"><link rel="prefetch" href="/assets/js/76.d4c7082a.js"><link rel="prefetch" href="/assets/js/77.ee835514.js"><link rel="prefetch" href="/assets/js/78.8b963815.js"><link rel="prefetch" href="/assets/js/79.ebb80d16.js"><link rel="prefetch" href="/assets/js/80.a1cf985f.js"><link rel="prefetch" href="/assets/js/81.fffc4215.js"><link rel="prefetch" href="/assets/js/82.8581c092.js"><link rel="prefetch" href="/assets/js/83.72154880.js"><link rel="prefetch" href="/assets/js/84.8a5374d9.js"><link rel="prefetch" href="/assets/js/85.a2e8b00c.js"><link rel="prefetch" href="/assets/js/86.b44443de.js"><link rel="prefetch" href="/assets/js/87.472c0982.js"><link rel="prefetch" href="/assets/js/88.e340c33a.js"><link rel="prefetch" href="/assets/js/89.6c00a86f.js"><link rel="prefetch" href="/assets/js/90.88146b75.js"><link rel="prefetch" href="/assets/js/91.92fb1f62.js"><link rel="prefetch" href="/assets/js/92.1bcc506e.js"><link rel="prefetch" href="/assets/js/93.1b34b37a.js"><link rel="prefetch" href="/assets/js/94.61e4a041.js"><link rel="prefetch" href="/assets/js/95.eb6e5e54.js"><link rel="prefetch" href="/assets/js/96.54bf44bc.js"><link rel="prefetch" href="/assets/js/97.89858d79.js"><link rel="prefetch" href="/assets/js/98.bfea64f2.js"><link rel="prefetch" href="/assets/js/99.f8c432ed.js"><link rel="prefetch" href="/assets/js/vendors~docs-searchbar.0dc500a0.js"><link rel="prefetch" href="/assets/js/vendors~docsearch.e97360d2.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.bd798f36.css">
+  </head>
+  <body class="theme-mode-light">
+    <div id="app" data-server-rendered="true"><div class="theme-container sidebar-open have-rightmenu"><header class="navbar blur"><div title="目录" class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/img/logo.png" alt="Nick个人博客" class="logo"> <span class="site-name can-hide">Nick个人博客</span></a> <div class="links"><form id="search-form" role="search" class="meilisearch-search-wrapper search-box theme-false"><input id="meilisearch-search-input" class="search-query"></form> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">首页</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="技术分享" class="dropdown-title"><a href="/ios/" class="link-title">技术分享</a> <span class="title" style="display:none;">技术分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/ios/" class="nav-link">iOS开发</a></li><li class="dropdown-item"><!----> <a href="/interview/" class="nav-link">iOS面试题</a></li><li class="dropdown-item"><!----> <a href="/hexo/" class="nav-link">Hexo使用</a></li><li class="dropdown-item"><!----> <a href="/jenkins/" class="nav-link">Jenkins</a></li><li class="dropdown-item"><!----> <a href="/pod/" class="nav-link">Pod使用</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="索引" class="dropdown-title"><a href="/sharelink/" class="link-title">索引</a> <span class="title" style="display:none;">索引</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/network/" class="nav-link">网络好文</a></li><li class="dropdown-item"><!----> <a href="/categories/" class="nav-link">分类</a></li><li class="dropdown-item"><!----> <a href="/tags/" class="nav-link">标签</a></li><li class="dropdown-item"><!----> <a href="/archives/" class="nav-link">归档</a></li></ul></div></div><div class="nav-item"><a href="/poetry/" class="nav-link">古诗词欣赏</a></div><div class="nav-item"><a href="/about/" class="nav-link">关于</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="友链分享" class="dropdown-title"><a href="/share/" class="link-title">友链分享</a> <span class="title" style="display:none;">友链分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><h4>Projects🎈</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="/projects/" class="nav-link">✔ My Project ✨</a></li><li class="dropdown-subitem"><a href="/share/" class="nav-link">✔ 友 情 链 接 🎃</a></li><li class="dropdown-subitem"><a href="/life/www/" class="nav-link">✔ 个 人 网 站 ⭐️</a></li></ul></li><li class="dropdown-item"><h4>我的工具</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="https://ref.eryajf.net" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  备忘录清单
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/json2go" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  json2go
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/mdnice" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  微信MD编辑
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/highlight/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  代码高亮工具
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://leetcode-cn.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  LeetCode
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://cn.vuejs.org/v2/guide/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Vue.js
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.bootcdn.cn/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  BootCDN
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.linuxcool.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Linux命令大全
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></li></ul></div></div> <a href="https://github.com/nick5683/nick5683" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav></div></header> <div class="sidebar-mask"></div> <div class="sidebar-hover-trigger"></div> <aside class="sidebar" style="display:none;"><div class="blogger"><img src="/img/dengxia.gif"> <div class="blogger-info"><h3>Nick5683</h3> <span>行者常至，为者常成</span></div></div> <nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">首页</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="技术分享" class="dropdown-title"><a href="/ios/" class="link-title">技术分享</a> <span class="title" style="display:none;">技术分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/ios/" class="nav-link">iOS开发</a></li><li class="dropdown-item"><!----> <a href="/interview/" class="nav-link">iOS面试题</a></li><li class="dropdown-item"><!----> <a href="/hexo/" class="nav-link">Hexo使用</a></li><li class="dropdown-item"><!----> <a href="/jenkins/" class="nav-link">Jenkins</a></li><li class="dropdown-item"><!----> <a href="/pod/" class="nav-link">Pod使用</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="索引" class="dropdown-title"><a href="/sharelink/" class="link-title">索引</a> <span class="title" style="display:none;">索引</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/network/" class="nav-link">网络好文</a></li><li class="dropdown-item"><!----> <a href="/categories/" class="nav-link">分类</a></li><li class="dropdown-item"><!----> <a href="/tags/" class="nav-link">标签</a></li><li class="dropdown-item"><!----> <a href="/archives/" class="nav-link">归档</a></li></ul></div></div><div class="nav-item"><a href="/poetry/" class="nav-link">古诗词欣赏</a></div><div class="nav-item"><a href="/about/" class="nav-link">关于</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="友链分享" class="dropdown-title"><a href="/share/" class="link-title">友链分享</a> <span class="title" style="display:none;">友链分享</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><h4>Projects🎈</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="/projects/" class="nav-link">✔ My Project ✨</a></li><li class="dropdown-subitem"><a href="/share/" class="nav-link">✔ 友 情 链 接 🎃</a></li><li class="dropdown-subitem"><a href="/life/www/" class="nav-link">✔ 个 人 网 站 ⭐️</a></li></ul></li><li class="dropdown-item"><h4>我的工具</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="https://ref.eryajf.net" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  备忘录清单
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/json2go" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  json2go
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/mdnice" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  微信MD编辑
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="http://public.eryajf.net/highlight/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  代码高亮工具
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://leetcode-cn.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  LeetCode
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://cn.vuejs.org/v2/guide/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Vue.js
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.bootcdn.cn/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  BootCDN
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-subitem"><a href="https://www.linuxcool.com/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Linux命令大全
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></li></ul></div></div> <a href="https://github.com/nick5683/nick5683" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>王飞飞不会飞_swift</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading open"><span>王飞飞不会飞_objc</span> <span class="arrow down"></span></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/pages/050200/" class="sidebar-link">对象的本质探索(上)</a></li><li><a href="/pages/050201/" class="sidebar-link">对象的本质探索(下)</a></li><li><a href="/pages/050202/" class="sidebar-link">类对象的结构(上)</a></li><li><a href="/pages/050203/" class="sidebar-link">类对象的结构(下)</a></li><li><a href="/pages/050204/" class="sidebar-link">class类结构cache_t源码详解</a></li><li><a href="/pages/050205/" class="sidebar-link">objc_msgSend之方法查找源码解析</a></li><li><a href="/pages/050206/" class="sidebar-link">objc_msgSend之动态解析和消息转发</a></li><li><a href="/pages/050207/" class="sidebar-link">启动流程 -dyld4源码解析</a></li><li><a href="/pages/050208/" class="sidebar-link">启动流程-objc源码解析</a></li><li><a href="/pages/050209/" class="sidebar-link">分类和关联对象源码解析</a></li><li><a href="/pages/050210/" class="sidebar-link">多线程之GCD</a></li><li><a href="/pages/050211/" class="sidebar-link">GCD之函数和死锁源码浅析</a></li><li><a href="/pages/050212/" class="sidebar-link">GCD函数解析(栅栏、信号量、一次性、调度组)</a></li><li><a href="/pages/050213/" class="sidebar-link">iOS中的锁</a></li><li><a href="/pages/050214/" class="sidebar-link">synchronized为何如此强大?</a></li><li><a href="/pages/050215/" class="sidebar-link">关于Block，你在第几层？</a></li><li><a href="/pages/050216/" class="sidebar-link">LLVM概述</a></li><li><a href="/pages/050217/" class="sidebar-link">架构模式</a></li><li><a href="/pages/050218/" class="sidebar-link">KVC和KVO理解</a></li><li><a href="/pages/050219/" aria-current="page" class="active sidebar-link">Runloop探究</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level2"><a href="/pages/050219/#什么是runloop" class="sidebar-link">什么是Runloop？</a></li><li class="sidebar-sub-header level2"><a href="/pages/050219/#runloop中有什么" class="sidebar-link">Runloop中有什么？</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level3"><a href="/pages/050219/#runloop和线程的关系" class="sidebar-link">Runloop和线程的关系</a></li><li class="sidebar-sub-header level3"><a href="/pages/050219/#runloop和runloopmode的关系" class="sidebar-link">Runloop和RunloopMode的关系</a></li></ul></li><li class="sidebar-sub-header level2"><a href="/pages/050219/#runloopmode有什么" class="sidebar-link">RunloopMode有什么？</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header level3"><a href="/pages/050219/#sources0" class="sidebar-link">sources0</a></li><li class="sidebar-sub-header level3"><a href="/pages/050219/#sources1" class="sidebar-link">sources1</a></li><li class="sidebar-sub-header level3"><a href="/pages/050219/#timers" class="sidebar-link">timers</a></li><li class="sidebar-sub-header level3"><a href="/pages/050219/#observers" class="sidebar-link">observers</a></li></ul></li><li class="sidebar-sub-header level2"><a href="/pages/050219/#runloop执行流程" class="sidebar-link">Runloop执行流程</a></li><li class="sidebar-sub-header level2"><a href="/pages/050219/#runloop的应用" class="sidebar-link">Runloop的应用</a></li><li class="sidebar-sub-header level2"><a href="/pages/050219/#友情链接🔗" class="sidebar-link">友情链接🔗</a></li></ul></li></ul></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>掘金articles收藏</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>好文摘录</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>Jenkins网络</span> <span class="arrow right"></span></p> <!----></section></li></ul> </aside> <div><main class="page"><div class="theme-vdoing-wrapper bg-style-6"><div class="articleInfo-wrap" data-v-057748f7><div class="articleInfo" data-v-057748f7><ul class="breadcrumbs" data-v-057748f7><li data-v-057748f7><a href="/" title="首页" class="iconfont icon-home router-link-active" data-v-057748f7></a></li> <li data-v-057748f7><a href="/network/#网络好文" data-v-057748f7>网络好文</a></li><li data-v-057748f7><a href="/network/#王飞飞不会飞_objc" data-v-057748f7>王飞飞不会飞_objc</a></li></ul> <div class="info" data-v-057748f7><div title="作者" class="author iconfont icon-touxiang" data-v-057748f7><a href="javascript:;" data-v-057748f7>王飞飞不会飞</a></div> <div title="创建时间" class="date iconfont icon-riqi" data-v-057748f7><a href="javascript:;" data-v-057748f7>2022-07-15</a></div> <!----></div></div></div> <!----> <div class="content-wrapper"><div class="right-menu-wrapper"><div class="right-menu-margin"><div class="right-menu-title">目录</div> <div class="right-menu-content"></div></div></div> <h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAABKFJREFUSA3tVl1oFVcQnrMbrak3QUgkya1akpJYcrUtIqW1JvFBE9LiQ5v6JmJpolbMg32rVrhgoYK0QiMY6i9Y6EMaW5D+xFJaTYItIuK2Kr3+BJNwkxBj05sQY3b3nM6cs2dv9t7NT/vQJw/sndk5M/PNzJkzewGerP+pAmy+ON8lLzUJgA8ZYxYIYZmGYRnctDaWvJJAmTtfP1pvXsBCCPP8QFcCaRkZYACgDZFO4stNIcBCajEOlmmC9XpJ9bAGCaPaPmzPl32dvLSVu3BWCTQs0XQQ6g0DYgwLIoAZbBCdW/i+781o1VVlm/410mw4h06Y7bIPHNyWDyL4FHkX03Q8SrzNhZTZriieckWt7cL6MM85YcLpsi/7O9/iXFT6MswI0DmmpkSaJ0qLxFIm3+i1THHB3zmBH3PYx9CcykcLOeQVVa7QtdxTgQgEleX2AjHYfwA+2ddV77ruGoJUbhGDI09YSNXyMpUt5ylOzxgbUmtOp7NmbNt8v3arjTBfYELmLUV+M+nSawNNAUqpT3ClJWg5I3BLT+cGW/DXNGCa6tx1aakCGEigArTn4TDIPdrXXYKCZNrHLMCOEPvHBlLQ99s9eHB7EB6NTki73CVPQ2F5MSx/uRQixfmq7rK0wYD8w8E905bnPDfwoWs/rfv93NWN/ZfvwsLIU7A09gxECyISeGJkHAau98L97tuw7NXnoPyNF8FcYGLGKsOs0mN3OEyec9esGW/ZEl945dTP34wlR2FZVQWU1q0Cw8Tr7p+hgLLNL0FPxx/Q35mA8aEUrH6nCgwEl0tn7wUiZYJnNRh6DK4UH/k0lfyrsBKdPVv/AriGIQcEDQZ65LBAGe2Rzui9Ybjz7XUppz1/uKBbyVPGkN3ZAeC6hr0x7Nr38N5+EqkoOm17xpoqR9ohQF55ERSvr4Dkr3chNfC3DMzGJlNBElW8w9nsGQvhNGIzDkXzCg8cLK951xHsFBlTJspJNi3ZFIMF2AeDV3q8DNOB+YHi6QTrChDIWDBRi5U5f+ZMfJLu3ccrqxtdxk4SKH336LFxSmkqefwU5T8fhdSdQf9IVKD6aNiwI/hnmcAZ91isYMJIaCUCx9W098+LgruikeTqzqqxKPUwqJyCPJiyemVVZBOijDGjD38Os0jOiSPL1z3SPjXNANbiNPXAdzTfukjjuknNBbyz3nwgTd3AVFqUJ5hpHlq9MveLnWwttUfoygBmvVjuikxND3znrhsELnZk7k+OjIGxeNEkomyLVta0xxn+HZhjBc4YZ/AFjHjz9u3xRZl2BN4aq9nFwWh16IrQ1aHHEd3j1+4/dB9OtH4e29A2H1DyHQRmOSfQZ1Fy7MHBTGB6J/Djq6p3OxyO2cB+4Car7v/o3GXgfAkj23+x9ID1Teoamo/SXcbvSf2PX7Vc8DdCmE1vN9di+32P9/5YR3vLnhCVGUWBjEkr3yh4H8v9CzmsbdhzOKzsJKM90iFdaTMjRPhGVsakRvOaRidljo6H6G7j+ctrJpsP+4COhDIl0La2+FS4+5mlocBaXY5QnGZysIBYoeSsl5qQzrSj/cgNrfuEzlWBfwA+EjrZyWUvpAAAAABJRU5ErkJggg==">Runloop探究<!----></h1> <div class="page-slot page-slot-top"><div style="
+  color:#f56c6c;
+  letter-spacing:0;
+  background: #fef0f0;
+  border-radius: 4px;
+  border: solid 1px;
+  display: block;
+  width: 50%;
+  text-align: center;
+  margin: 0 auto;
+  padding: 10px 0;
+  box-sizing: border-box;
+">
+  文章发布较早，内容可能过时，阅读注意甄别。
+</div></div> <div class="theme-vdoing-content content__default"><h1 id="ios八股文-二十-runloop探究"><a href="#ios八股文-二十-runloop探究" class="header-anchor">#</a> iOS八股文（二十）Runloop探究</h1> <p><a href="https://juejin.cn/user/352291371355911/posts" target="_blank" rel="noopener noreferrer">王飞飞不会飞<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></p> <p>提到<code>Runloop</code>每个<code>iOSer</code>都非常熟悉，也常常作为面试重点来考察面试者。本文通过查阅文档，代码验证来了解认识<code>Runloop</code>。</p> <h2 id="什么是runloop"><a href="#什么是runloop" class="header-anchor">#</a> 什么是Runloop？</h2> <p>首先来看<a href="https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW20" target="_blank" rel="noopener noreferrer">官方文档<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>的定义⬇️</p> <blockquote><p>Runloop是与线程相关联的基本基础设施的一部分。Runloop是事件处理循环，用于安排工作和协调传入事件的接收。运行循环的目的是在有工作要做时保持线程繁忙，在没有工作时使线程进入睡眠状态。</p></blockquote> <p>在App运行的过程中，主线程的Runloop保证了主线程不被销毁从而保证应用的存活，从而能实时接收到用户的响应事件，能够触发定时事件。如果没有Runloop的话，程序执行完代码就会立马return。</p> <p>在iOS中有2套关于Runloop的API，CoreFoundation的CFRunloopRef 和Fundationde的NSRunloop。</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)runloopApi {
+//    Foundation
+    NSRunLoop *runloop = [NSRunLoop currentRunLoop]; // 获得当前线程的RunLoop对象
+    [runloop run];
+    [NSRunLoop mainRunLoop]; // 获得主线程的RunLoop对象
+
+//    Core Foundation
+    CFRunLoopGetCurrent(); // 获得当前线程的RunLoop对象
+    CFRunLoopRun();
+    CFRunLoopGetMain();
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br></div></div><p>其中NSRunloop是对RunloopRef的封装，根据CFRunloop的源码可以更好的理解Runloop的原理。<a href="https://opensource.apple.com/source/CF/" target="_blank" rel="noopener noreferrer">源码这里<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>。</p> <h2 id="runloop中有什么"><a href="#runloop中有什么" class="header-anchor">#</a> Runloop中有什么？</h2> <p>在源码中我们可以找到关于Runloop的数据结构：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>struct __CFRunLoop {
+    CFRuntimeBase _base;
+    pthread_mutex_t _lock;            /* locked for accessing mode list */
+    __CFPort _wakeUpPort;            // used for CFRunLoopWakeUp
+    Boolean _unused;
+    volatile _per_run_data *_perRunData;              // reset for runs of the run loop
+    pthread_t _pthread;
+    uint32_t _winthread;
+    CFMutableSetRef _commonModes;
+    CFMutableSetRef _commonModeItems;
+    CFRunLoopModeRef _currentMode;
+    CFMutableSetRef _modes;
+    struct _block_item *_blocks_head;
+    struct _block_item *_blocks_tail;
+    CFAbsoluteTime _runTime;
+    CFAbsoluteTime _sleepTime;
+    CFTypeRef _counterpart;
+};
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br></div></div><p>在这些成员变量当中，可以聚焦观察这三个：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>//线程
+pthread_t _pthread;
+//模式
+CFRunLoopModeRef _currentMode;
+CFMutableSetRef _modes;
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br></div></div><h3 id="runloop和线程的关系"><a href="#runloop和线程的关系" class="header-anchor">#</a> Runloop和线程的关系</h3> <p><code>Runloop</code>和线程是一对一的关系，每个线程中都有一个唯一的<code>Runloop</code>，每个<code>Runloop</code>都对应着一个线程，其中主线程的<code>Runloop</code>是默认开启的，子线程的<code>Runloop</code>默认是关闭状态的，如果要在子线程使用<code>Runloop</code>一定要记得开启<code>Runloop</code>。这一点从CFRunloop的数据结构中也能看出。</p> <h3 id="runloop和runloopmode的关系"><a href="#runloop和runloopmode的关系" class="header-anchor">#</a> Runloop和RunloopMode的关系</h3> <p>Runloop和RunloopMode是一对多的关系，Runloop中有多个RunloopMode（注意成员变量<code>_commonModes</code>的类型为<code>Set</code>）。而在某一时刻Runloop的mode是只有一个的（<code>_currentMode</code>）。</p> <p>RunLoop 有五种运行模式（Mode）：</p> <ol><li>kCFRunLoopDefaultMode：App的默认Mode，通常主线程是在这个Mode下运行</li> <li>UITrackingRunLoopMode：界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响</li> <li>UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用，会切换到kCFRunLoopDefaultMode</li> <li>GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到</li> <li>kCFRunLoopCommonModes: 这是一个占位用的Mode，作为标记kCFRunLoopDefaultMode和UITrackingRunLoopMode用，并不是一种真正的Mode。</li></ol> <p>在<code>使用NSTimer</code>的时候，需要将Timer放在Runloop中，并且需要指定Mode，由于是Fundation框架的Api，在Fundation中Mode只有两种<code>NSRunLoopCommonModes</code>、<code>NSDefaultRunLoopMode</code>。如果使用<code>NSDefaultRunLoopMode</code>，在滑动ScrollView的时候，Runloop会切换到<code>UITrackingRunLoopMode</code>模式，对应的Timer会短暂性失效，等到Runloop再次切换到NSDefaultRunLoopMode的时候才会起作用。所以我们在添加Timer的时候最好使用<code>NSRunLoopCommonModes</code>。</p> <h2 id="runloopmode有什么"><a href="#runloopmode有什么" class="header-anchor">#</a> RunloopMode有什么？</h2> <p>从源码中查找RunloopMode的数据结构：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>struct __CFRunLoopMode {
+    CFRuntimeBase _base;
+    pthread_mutex_t _lock;    /* must have the run loop locked before locking this */
+    CFStringRef _name;
+    Boolean _stopped;
+    char _padding[3];
+    CFMutableSetRef _sources0;
+    CFMutableSetRef _sources1;
+    CFMutableArrayRef _observers;
+    CFMutableArrayRef _timers;
+    CFMutableDictionaryRef _portToV1SourceMap;
+    __CFPortSet _portSet;
+    CFIndex _observerMask;
+#if USE_DISPATCH_SOURCE_FOR_TIMERS
+    dispatch_source_t _timerSource;
+    dispatch_queue_t _queue;
+    Boolean _timerFired; // set to true by the source when a timer has fired
+    Boolean _dispatchTimerArmed;
+#endif
+#if USE_MK_TIMER_TOO
+    mach_port_t _timerPort;
+    Boolean _mkTimerArmed;
+#endif
+#if DEPLOYMENT_TARGET_WINDOWS
+    DWORD _msgQMask;
+    void (*_msgPump)(void);
+#endif
+    uint64_t _timerSoftDeadline; /* TSR */
+    uint64_t _timerHardDeadline; /* TSR */
+};
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br></div></div><p>过滤其他信息，直接聚焦以下信息：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>CFMutableSetRef _sources0;
+CFMutableSetRef _sources1;
+CFMutableArrayRef _observers;
+CFMutableArrayRef _timers;
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br></div></div><p>RunloopMode里面有sources0、sources1、observer、timer组成。</p> <h3 id="sources0"><a href="#sources0" class="header-anchor">#</a> sources0</h3> <p>用户响应事件包括但不限于button的点击事件，touchesBegan事件等。可以在这些回调里面打断点然后通过lldb调试 bt 命令查看堆栈信息。 button的点击selector中：</p> <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/507d0d2dd0df487584cd0f94b5c7eeb7~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"> <code>touchesBegan:withEvent:</code>方法中：</p> <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/137729c6065848cbaebc6ed0b4a1457d~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <h3 id="sources1"><a href="#sources1" class="header-anchor">#</a> sources1</h3> <p>基于Port的线程间通，NSPort的代理方法的都是放在sources1中：</p> <p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/509a10094f8b4812bf19bf07805e8095~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <h3 id="timers"><a href="#timers" class="header-anchor">#</a> timers</h3> <p>定时器，和定时器相关的操作：</p> <p><code>scheduledTimerWithTimeInterval: target: selector: userInfo: repeats:</code>方法的回调会加入到timers中。</p> <div class="language-swift line-numbers-mode"><pre class="language-swift"><code><span class="token punctuation">{</span>
+    <span class="token class-name">NSTimer</span> <span class="token operator">*</span>timer <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token class-name">NSTimer</span> scheduledTimerWithTimeInterval<span class="token punctuation">:</span><span class="token number">2</span> target<span class="token punctuation">:</span><span class="token keyword">self</span> selector<span class="token punctuation">:</span><span class="token attribute atrule">@selector</span><span class="token punctuation">(</span>timerAction<span class="token punctuation">)</span> userInfo<span class="token punctuation">:</span><span class="token nil constant">nil</span> repeats<span class="token punctuation">:</span><span class="token constant">YES</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">//代码在主线程中运行</span>
+    <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token class-name">NSRunLoop</span> currentRunLoop<span class="token punctuation">]</span> addTimer<span class="token punctuation">:</span>timer forMode<span class="token punctuation">:</span><span class="token class-name">NSRunLoopCommonModes</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br></div></div><p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/01fbfc173a1f4a09aa1514f0ef430103~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <p><code>performSelector: withObject: afterDelay: inModes:</code>方法的回调也会加入timers中。</p> <div class="language-swift line-numbers-mode"><pre class="language-swift"><code><span class="token punctuation">{</span>
+    <span class="token punctuation">[</span><span class="token keyword">self</span> performSelector<span class="token punctuation">:</span><span class="token attribute atrule">@selector</span><span class="token punctuation">(</span>delayAciton<span class="token punctuation">)</span> withObject<span class="token punctuation">:</span><span class="token nil constant">nil</span> afterDelay<span class="token punctuation">:</span><span class="token number">1</span> inModes<span class="token punctuation">:</span>@<span class="token punctuation">[</span><span class="token class-name">NSRunLoopCommonModes</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+ <span class="token punctuation">}</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br></div></div><p><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/28bf4be5a3234fa48ef0268aaac958b7~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <h3 id="observers"><a href="#observers" class="header-anchor">#</a> observers</h3> <p>使用CoreFoundation给Runloop添加观察者的回调</p> <div class="language-swift line-numbers-mode"><pre class="language-swift"><code><span class="token class-name">CFRunLoopObserverRef</span> <span class="token class-name">CFRunLoopObserverCreateWithHandler</span><span class="token punctuation">(</span><span class="token class-name">CFAllocatorRef</span> allocator<span class="token punctuation">,</span> <span class="token class-name">CFOptionFlags</span> activities<span class="token punctuation">,</span> <span class="token class-name">Boolean</span> repeats<span class="token punctuation">,</span> <span class="token class-name">CFIndex</span> order<span class="token punctuation">,</span> <span class="token function">void</span> <span class="token punctuation">(</span><span class="token operator">^</span>block<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token class-name">CFRunLoopObserverRef</span> observer<span class="token punctuation">,</span> <span class="token class-name">CFRunLoopActivity</span> activity<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1a3bb5fa42db49d4be084d03771ab718~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <h2 id="runloop执行流程"><a href="#runloop执行流程" class="header-anchor">#</a> Runloop执行流程</h2> <p>Runloop在循环的过程有几个状态，在运行过程中在这几个状态来回切换。</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>/* Run Loop Observer Activities */
+typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
+    kCFRunLoopEntry = (1UL &lt;&lt; 0), // 进入
+    kCFRunLoopBeforeTimers = (1UL &lt;&lt; 1), // 即将处理Timer
+    kCFRunLoopBeforeSources = (1UL &lt;&lt; 2), // 即将处理Source
+    kCFRunLoopBeforeWaiting = (1UL &lt;&lt; 5),  // 即将睡眠
+    kCFRunLoopAfterWaiting = (1UL &lt;&lt; 6), // 被唤醒
+    kCFRunLoopExit = (1UL &lt;&lt; 7), //退出
+    kCFRunLoopAllActivities = 0x0FFFFFFFU
+};
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br></div></div><p>可以看到除了进入退出还有所有状态外有4种运行中的状态。我们通过Runloop的源码可以大致了解这些状态是如何切换的。源码比较多，可以只看逻辑分支合带序号的注释部分</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>/* rl, rlm are locked on entrance and exit */
+/**
+ *  运行run loop
+ *
+ *  @param rl              运行的RunLoop对象
+ *  @param rlm             运行的mode
+ *  @param seconds         run loop超时时间
+ *  @param stopAfterHandle true:run loop处理完事件就退出  false:一直运行直到超时或者被手动终止
+ *  @param previousMode    上一次运行的mode
+ *
+ *  @return 返回4种状态
+ */
+
+static int32_t __CFRunLoopRun(CFRunLoopRef rl, CFRunLoopModeRef rlm, CFTimeInterval seconds, Boolean stopAfterHandle, CFRunLoopModeRef previousMode) {
+    
+        //设置RunLoop为可以被唤醒状态
+        __CFRunLoopUnsetIgnoreWakeUps(rl);
+        
+        /// 2. 通知 Observers: RunLoop 即将触发 Timer 回调。
+        if (rlm-&gt;_observerMask &amp; kCFRunLoopBeforeTimers) __CFRunLoopDoObservers(rl, rlm, kCFRunLoopBeforeTimers);
+        if (rlm-&gt;_observerMask &amp; kCFRunLoopBeforeSources)
+            /// 3. 通知 Observers: RunLoop 即将触发 Source0 (非port) 回调。
+            __CFRunLoopDoObservers(rl, rlm, kCFRunLoopBeforeSources);
+        
+        /// 执行被加入的block
+        __CFRunLoopDoBlocks(rl, rlm);
+        /// 4. RunLoop 触发 Source0 (非port) 回调。
+        Boolean sourceHandledThisLoop = __CFRunLoopDoSources0(rl, rlm, stopAfterHandle);
+        if (sourceHandledThisLoop) {
+            /// 执行被加入的block
+            __CFRunLoopDoBlocks(rl, rlm);
+        }
+        
+        //如果没有Sources0事件处理 并且 没有超时，poll为false
+        //如果有Sources0事件处理 或者 超时，poll都为true
+        Boolean poll = sourceHandledThisLoop || (0ULL == timeout_context-&gt;termTSR);
+      
+        
+        didDispatchPortLastTime = false;
+        /// 6.通知 Observers: RunLoop 的线程即将进入休眠(sleep)。
+        if (!poll &amp;&amp; (rlm-&gt;_observerMask &amp; kCFRunLoopBeforeWaiting)) __CFRunLoopDoObservers(rl, rlm, kCFRunLoopBeforeWaiting);
+        //设置RunLoop为休眠状态
+        __CFRunLoopSetSleeping(rl);
+        // do not do any user callouts after this point (after notifying of sleeping)
+        
+        // Must push the local-to-this-activation ports in on every loop
+        // iteration, as this mode could be run re-entrantly and we don't
+        // want these ports to get serviced.
+        
+        __CFPortSetInsert(dispatchPort, waitSet);
+        
+        __CFRunLoopModeUnlock(rlm);
+        __CFRunLoopUnlock(rl);
+        
+#if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED || DEPLOYMENT_TARGET_EMBEDDED_MINI
+#if USE_DISPATCH_SOURCE_FOR_TIMERS
+        
+        //这里有个内循环，用于接收等待端口的消息
+        //进入此循环后，线程进入休眠，直到收到新消息才跳出该循环，继续执行run loop
+        do {
+            if (kCFUseCollectableAllocator) {
+                objc_clear_stack(0);
+                memset(msg_buffer, 0, sizeof(msg_buffer));
+            }
+            
+            msg = (mach_msg_header_t *)msg_buffer;
+            //7.接收waitSet端口的消息
+            __CFRunLoopServiceMachPort(waitSet, &amp;msg, sizeof(msg_buffer), &amp;livePort, poll ? 0 : TIMEOUT_INFINITY);
+            //收到消息之后，livePort的值为msg-&gt;msgh_local_port，
+            if (modeQueuePort != MACH_PORT_NULL &amp;&amp; livePort == modeQueuePort) {
+                // Drain the internal queue. If one of the callout blocks sets the timerFired flag, break out and service the timer.
+                while (_dispatch_runloop_root_queue_perform_4CF(rlm-&gt;_queue));
+                if (rlm-&gt;_timerFired) {
+                    // Leave livePort as the queue port, and service timers below
+                    rlm-&gt;_timerFired = false;
+                    break;
+                } else {
+                    if (msg &amp;&amp; msg != (mach_msg_header_t *)msg_buffer) free(msg);
+                }
+            } else {
+                // Go ahead and leave the inner loop.
+                break;
+            }
+        } while (1);
+#else
+        if (kCFUseCollectableAllocator) {
+            objc_clear_stack(0);
+            memset(msg_buffer, 0, sizeof(msg_buffer));
+        }
+        msg = (mach_msg_header_t *)msg_buffer;
+        /// 7. 调用 mach_msg 等待接受 mach_port 的消息。线程将进入休眠, 直到被下面某一个事件唤醒。
+        /// • 一个基于 port 的Source 的事件。
+        /// • 一个 Timer 到时间了
+        /// • RunLoop 自身的超时时间到了
+        /// • 被其他什么调用者手动唤醒
+        
+        // mach 事务 - 指令 
+        __CFRunLoopServiceMachPort(waitSet, &amp;msg, sizeof(msg_buffer), &amp;livePort, poll ? 0 : TIMEOUT_INFINITY);
+#endif
+        
+        
+#elif DEPLOYMENT_TARGET_WINDOWS
+        // Here, use the app-supplied message queue mask. They will set this if they are interested in having this run loop receive windows messages.
+        __CFRunLoopWaitForMultipleObjects(waitSet, NULL, poll ? 0 : TIMEOUT_INFINITY, rlm-&gt;_msgQMask, &amp;livePort, &amp;windowsMessageReceived);
+#endif
+        
+        __CFRunLoopLock(rl);
+        __CFRunLoopModeLock(rlm);
+        
+        // Must remove the local-to-this-activation ports in on every loop
+        // iteration, as this mode could be run re-entrantly and we don't
+        // want these ports to get serviced. Also, we don't want them left
+        // in there if this function returns.
+        
+        __CFPortSetRemove(dispatchPort, waitSet);
+        
+        __CFRunLoopSetIgnoreWakeUps(rl);
+        
+        // user callouts now OK again
+        //取消runloop的休眠状态
+        __CFRunLoopUnsetSleeping(rl);
+        /// 8. 通知 Observers: RunLoop 的线程刚刚被唤醒了。
+        if (!poll &amp;&amp; (rlm-&gt;_observerMask &amp; kCFRunLoopAfterWaiting)) __CFRunLoopDoObservers(rl, rlm, kCFRunLoopAfterWaiting);
+        
+        /// 收到消息，处理消息。
+    handle_msg:;
+        __CFRunLoopSetIgnoreWakeUps(rl);
+        
+#if DEPLOYMENT_TARGET_WINDOWS
+        if (windowsMessageReceived) {
+            // These Win32 APIs cause a callout, so make sure we're unlocked first and relocked after
+            __CFRunLoopModeUnlock(rlm);
+            __CFRunLoopUnlock(rl);
+            
+            if (rlm-&gt;_msgPump) {
+                rlm-&gt;_msgPump();
+            } else {
+                MSG msg;
+                if (PeekMessage(&amp;msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD)) {
+                    TranslateMessage(&amp;msg);
+                    DispatchMessage(&amp;msg);
+                }
+            }
+            
+            __CFRunLoopLock(rl);
+            __CFRunLoopModeLock(rlm);
+            sourceHandledThisLoop = true;
+            
+            // To prevent starvation of sources other than the message queue, we check again to see if any other sources need to be serviced
+            // Use 0 for the mask so windows messages are ignored this time. Also use 0 for the timeout, because we're just checking to see if the things are signalled right now -- we will wait on them again later.
+            // NOTE: Ignore the dispatch source (it's not in the wait set anymore) and also don't run the observers here since we are polling.
+            __CFRunLoopSetSleeping(rl);
+            __CFRunLoopModeUnlock(rlm);
+            __CFRunLoopUnlock(rl);
+            
+            __CFRunLoopWaitForMultipleObjects(waitSet, NULL, 0, 0, &amp;livePort, NULL);
+            
+            __CFRunLoopLock(rl);
+            __CFRunLoopModeLock(rlm);
+            __CFRunLoopUnsetSleeping(rl);
+            // If we have a new live port then it will be handled below as normal
+        }
+        
+        
+#endif
+        if (MACH_PORT_NULL == livePort) {
+            CFRUNLOOP_WAKEUP_FOR_NOTHING();
+            // handle nothing
+        } else if (livePort == rl-&gt;_wakeUpPort) {
+            CFRUNLOOP_WAKEUP_FOR_WAKEUP();
+            // do nothing on Mac OS
+#if DEPLOYMENT_TARGET_WINDOWS
+            // Always reset the wake up port, or risk spinning forever
+            ResetEvent(rl-&gt;_wakeUpPort);
+#endif
+        }
+#if USE_DISPATCH_SOURCE_FOR_TIMERS
+        else if (modeQueuePort != MACH_PORT_NULL &amp;&amp; livePort == modeQueuePort) {
+            CFRUNLOOP_WAKEUP_FOR_TIMER();
+            /// 9.1 如果一个 Timer 到时间了，触发这个Timer的回调。
+            if (!__CFRunLoopDoTimers(rl, rlm, mach_absolute_time())) {
+                // Re-arm the next timer, because we apparently fired early
+                __CFArmNextTimerInMode(rlm, rl);
+            }
+        }
+#endif
+#if USE_MK_TIMER_TOO
+        else if (rlm-&gt;_timerPort != MACH_PORT_NULL &amp;&amp; livePort == rlm-&gt;_timerPort) {
+            CFRUNLOOP_WAKEUP_FOR_TIMER();
+            // On Windows, we have observed an issue where the timer port is set before the time which we requested it to be set. For example, we set the fire time to be TSR 167646765860, but it is actually observed firing at TSR 167646764145, which is 1715 ticks early. The result is that, when __CFRunLoopDoTimers checks to see if any of the run loop timers should be firing, it appears to be 'too early' for the next timer, and no timers are handled.
+            // In this case, the timer port has been automatically reset (since it was returned from MsgWaitForMultipleObjectsEx), and if we do not re-arm it, then no timers will ever be serviced again unless something adjusts the timer list (e.g. adding or removing timers). The fix for the issue is to reset the timer here if CFRunLoopDoTimers did not handle a timer itself. 9308754
+            if (!__CFRunLoopDoTimers(rl, rlm, mach_absolute_time())) {
+                // Re-arm the next timer
+                __CFArmNextTimerInMode(rlm, rl);
+            }
+        }
+#endif
+        /// 9.2 如果有dispatch到main_queue的block，执行block
+        else if (livePort == dispatchPort) {
+            CFRUNLOOP_WAKEUP_FOR_DISPATCH();
+            __CFRunLoopModeUnlock(rlm);
+            __CFRunLoopUnlock(rl);
+            _CFSetTSD(__CFTSDKeyIsInGCDMainQ, (void *)6, NULL);
+#if DEPLOYMENT_TARGET_WINDOWS
+            void *msg = 0;
+#endif
+            __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__(msg);
+            _CFSetTSD(__CFTSDKeyIsInGCDMainQ, (void *)0, NULL);
+            __CFRunLoopLock(rl);
+            __CFRunLoopModeLock(rlm);
+            sourceHandledThisLoop = true;
+            didDispatchPortLastTime = true;
+        } else {
+            /// 9.3 如果一个 Source1 (基于port) 发出事件了，处理这个事件
+            CFRUNLOOP_WAKEUP_FOR_SOURCE();
+            // Despite the name, this works for windows handles as well
+            CFRunLoopSourceRef rls = __CFRunLoopModeFindSourceForMachPort(rl, rlm, livePort);
+            if (rls) {
+#if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED || DEPLOYMENT_TARGET_EMBEDDED_MINI
+                mach_msg_header_t *reply = NULL;
+                sourceHandledThisLoop = __CFRunLoopDoSource1(rl, rlm, rls, msg, msg-&gt;msgh_size, &amp;reply) || sourceHandledThisLoop;
+                if (NULL != reply) {
+                    (void)mach_msg(reply, MACH_SEND_MSG, reply-&gt;msgh_size, 0, MACH_PORT_NULL, 0, MACH_PORT_NULL);
+                    CFAllocatorDeallocate(kCFAllocatorSystemDefault, reply);
+                }
+#elif DEPLOYMENT_TARGET_WINDOWS
+                sourceHandledThisLoop = __CFRunLoopDoSource1(rl, rlm, rls) || sourceHandledThisLoop;
+#endif
+            }
+        }
+#if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED || DEPLOYMENT_TARGET_EMBEDDED_MINI
+        if (msg &amp;&amp; msg != (mach_msg_header_t *)msg_buffer) free(msg);
+#endif
+        
+        /// 执行加入到Loop的block
+        __CFRunLoopDoBlocks(rl, rlm);
+        
+        if (sourceHandledThisLoop &amp;&amp; stopAfterHandle) {
+            /// 进入loop时参数说处理完事件就返回。
+            retVal = kCFRunLoopRunHandledSource;
+        } else if (timeout_context-&gt;termTSR &lt; mach_absolute_time()) {
+            /// 超出传入参数标记的超时时间了
+            retVal = kCFRunLoopRunTimedOut;
+        } else if (__CFRunLoopIsStopped(rl)) {
+            /// 被外部调用者强制停止了
+            __CFRunLoopUnsetStopped(rl);
+            retVal = kCFRunLoopRunStopped;
+        } else if (rlm-&gt;_stopped) {
+            /// 自动停止了
+            rlm-&gt;_stopped = false;
+            retVal = kCFRunLoopRunStopped;
+        } else if (__CFRunLoopModeIsEmpty(rl, rlm, previousMode)) {
+            /// source/timer/observer一个都没有了
+            retVal = kCFRunLoopRunFinished;
+        }
+        /// 如果没超时，mode里没空，loop也没被停止，那继续loop。
+    } while (0 == retVal);
+    
+    if (timeout_timer) {
+        dispatch_source_cancel(timeout_timer);
+        dispatch_release(timeout_timer);
+    } else {
+        free(timeout_context);
+    }
+    
+    return retVal;
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br><span class="line-number">32</span><br><span class="line-number">33</span><br><span class="line-number">34</span><br><span class="line-number">35</span><br><span class="line-number">36</span><br><span class="line-number">37</span><br><span class="line-number">38</span><br><span class="line-number">39</span><br><span class="line-number">40</span><br><span class="line-number">41</span><br><span class="line-number">42</span><br><span class="line-number">43</span><br><span class="line-number">44</span><br><span class="line-number">45</span><br><span class="line-number">46</span><br><span class="line-number">47</span><br><span class="line-number">48</span><br><span class="line-number">49</span><br><span class="line-number">50</span><br><span class="line-number">51</span><br><span class="line-number">52</span><br><span class="line-number">53</span><br><span class="line-number">54</span><br><span class="line-number">55</span><br><span class="line-number">56</span><br><span class="line-number">57</span><br><span class="line-number">58</span><br><span class="line-number">59</span><br><span class="line-number">60</span><br><span class="line-number">61</span><br><span class="line-number">62</span><br><span class="line-number">63</span><br><span class="line-number">64</span><br><span class="line-number">65</span><br><span class="line-number">66</span><br><span class="line-number">67</span><br><span class="line-number">68</span><br><span class="line-number">69</span><br><span class="line-number">70</span><br><span class="line-number">71</span><br><span class="line-number">72</span><br><span class="line-number">73</span><br><span class="line-number">74</span><br><span class="line-number">75</span><br><span class="line-number">76</span><br><span class="line-number">77</span><br><span class="line-number">78</span><br><span class="line-number">79</span><br><span class="line-number">80</span><br><span class="line-number">81</span><br><span class="line-number">82</span><br><span class="line-number">83</span><br><span class="line-number">84</span><br><span class="line-number">85</span><br><span class="line-number">86</span><br><span class="line-number">87</span><br><span class="line-number">88</span><br><span class="line-number">89</span><br><span class="line-number">90</span><br><span class="line-number">91</span><br><span class="line-number">92</span><br><span class="line-number">93</span><br><span class="line-number">94</span><br><span class="line-number">95</span><br><span class="line-number">96</span><br><span class="line-number">97</span><br><span class="line-number">98</span><br><span class="line-number">99</span><br><span class="line-number">100</span><br><span class="line-number">101</span><br><span class="line-number">102</span><br><span class="line-number">103</span><br><span class="line-number">104</span><br><span class="line-number">105</span><br><span class="line-number">106</span><br><span class="line-number">107</span><br><span class="line-number">108</span><br><span class="line-number">109</span><br><span class="line-number">110</span><br><span class="line-number">111</span><br><span class="line-number">112</span><br><span class="line-number">113</span><br><span class="line-number">114</span><br><span class="line-number">115</span><br><span class="line-number">116</span><br><span class="line-number">117</span><br><span class="line-number">118</span><br><span class="line-number">119</span><br><span class="line-number">120</span><br><span class="line-number">121</span><br><span class="line-number">122</span><br><span class="line-number">123</span><br><span class="line-number">124</span><br><span class="line-number">125</span><br><span class="line-number">126</span><br><span class="line-number">127</span><br><span class="line-number">128</span><br><span class="line-number">129</span><br><span class="line-number">130</span><br><span class="line-number">131</span><br><span class="line-number">132</span><br><span class="line-number">133</span><br><span class="line-number">134</span><br><span class="line-number">135</span><br><span class="line-number">136</span><br><span class="line-number">137</span><br><span class="line-number">138</span><br><span class="line-number">139</span><br><span class="line-number">140</span><br><span class="line-number">141</span><br><span class="line-number">142</span><br><span class="line-number">143</span><br><span class="line-number">144</span><br><span class="line-number">145</span><br><span class="line-number">146</span><br><span class="line-number">147</span><br><span class="line-number">148</span><br><span class="line-number">149</span><br><span class="line-number">150</span><br><span class="line-number">151</span><br><span class="line-number">152</span><br><span class="line-number">153</span><br><span class="line-number">154</span><br><span class="line-number">155</span><br><span class="line-number">156</span><br><span class="line-number">157</span><br><span class="line-number">158</span><br><span class="line-number">159</span><br><span class="line-number">160</span><br><span class="line-number">161</span><br><span class="line-number">162</span><br><span class="line-number">163</span><br><span class="line-number">164</span><br><span class="line-number">165</span><br><span class="line-number">166</span><br><span class="line-number">167</span><br><span class="line-number">168</span><br><span class="line-number">169</span><br><span class="line-number">170</span><br><span class="line-number">171</span><br><span class="line-number">172</span><br><span class="line-number">173</span><br><span class="line-number">174</span><br><span class="line-number">175</span><br><span class="line-number">176</span><br><span class="line-number">177</span><br><span class="line-number">178</span><br><span class="line-number">179</span><br><span class="line-number">180</span><br><span class="line-number">181</span><br><span class="line-number">182</span><br><span class="line-number">183</span><br><span class="line-number">184</span><br><span class="line-number">185</span><br><span class="line-number">186</span><br><span class="line-number">187</span><br><span class="line-number">188</span><br><span class="line-number">189</span><br><span class="line-number">190</span><br><span class="line-number">191</span><br><span class="line-number">192</span><br><span class="line-number">193</span><br><span class="line-number">194</span><br><span class="line-number">195</span><br><span class="line-number">196</span><br><span class="line-number">197</span><br><span class="line-number">198</span><br><span class="line-number">199</span><br><span class="line-number">200</span><br><span class="line-number">201</span><br><span class="line-number">202</span><br><span class="line-number">203</span><br><span class="line-number">204</span><br><span class="line-number">205</span><br><span class="line-number">206</span><br><span class="line-number">207</span><br><span class="line-number">208</span><br><span class="line-number">209</span><br><span class="line-number">210</span><br><span class="line-number">211</span><br><span class="line-number">212</span><br><span class="line-number">213</span><br><span class="line-number">214</span><br><span class="line-number">215</span><br><span class="line-number">216</span><br><span class="line-number">217</span><br><span class="line-number">218</span><br><span class="line-number">219</span><br><span class="line-number">220</span><br><span class="line-number">221</span><br><span class="line-number">222</span><br><span class="line-number">223</span><br><span class="line-number">224</span><br><span class="line-number">225</span><br><span class="line-number">226</span><br><span class="line-number">227</span><br><span class="line-number">228</span><br><span class="line-number">229</span><br><span class="line-number">230</span><br><span class="line-number">231</span><br><span class="line-number">232</span><br><span class="line-number">233</span><br><span class="line-number">234</span><br><span class="line-number">235</span><br><span class="line-number">236</span><br><span class="line-number">237</span><br><span class="line-number">238</span><br><span class="line-number">239</span><br><span class="line-number">240</span><br><span class="line-number">241</span><br><span class="line-number">242</span><br><span class="line-number">243</span><br><span class="line-number">244</span><br><span class="line-number">245</span><br><span class="line-number">246</span><br><span class="line-number">247</span><br><span class="line-number">248</span><br><span class="line-number">249</span><br><span class="line-number">250</span><br><span class="line-number">251</span><br><span class="line-number">252</span><br><span class="line-number">253</span><br><span class="line-number">254</span><br><span class="line-number">255</span><br><span class="line-number">256</span><br><span class="line-number">257</span><br><span class="line-number">258</span><br><span class="line-number">259</span><br><span class="line-number">260</span><br><span class="line-number">261</span><br><span class="line-number">262</span><br><span class="line-number">263</span><br><span class="line-number">264</span><br><span class="line-number">265</span><br><span class="line-number">266</span><br><span class="line-number">267</span><br></div></div><p>也许源码看得迷迷糊糊，没有关系这里有一个非常金典的图。</p> <p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/33f173253e3e4e419dad3566eba200c8~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <p>我们可以给Runloop添加观察者来观察其运行的状态：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)runloopObserver {
+  //创建监听者
+        CFRunLoopObserverRef observer = CFRunLoopObserverCreateWithHandler(CFAllocatorGetDefault(), kCFRunLoopAllActivities, YES, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {           
+            CFRunLoopMode str = CFRunLoopCopyCurrentMode(CFRunLoopGetCurrent());
+            NSLog(@&quot;RunLoopMode_%@&quot;,str);
+            switch (activity) {
+                case kCFRunLoopEntry:
+                    NSLog(@&quot;RunLoop进入&quot;);
+                    break;
+                case kCFRunLoopBeforeTimers:
+                    NSLog(@&quot;RunLoop即将处理Timers了&quot;);
+                    break;
+                case kCFRunLoopBeforeSources:
+                    NSLog(@&quot;RunLoop即将处理Sources了&quot;);
+                    break;
+                case kCFRunLoopBeforeWaiting:
+                    NSLog(@&quot;RunLoop即将休眠&quot;);
+                    break;
+                case kCFRunLoopAfterWaiting:
+                    NSLog(@&quot;RunLoop被唤醒了&quot;);
+                    break;
+                case kCFRunLoopExit:
+                    NSLog(@&quot;RunLoop退出了&quot;);
+                    break;                    
+                default:
+                    NSLog(@&quot;RunLoop其他&quot;);
+                    break;     
+            }
+        });
+        CFRunLoopAddObserver(CFRunLoopGetCurrent(), observer, kCFRunLoopCommonModes);
+        CFRelease(observer);
+
+
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br><span class="line-number">32</span><br><span class="line-number">33</span><br><span class="line-number">34</span><br></div></div><p>于此同时再增加一个定时器：</p> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>- (void)runloopFunc {
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(timerAction) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+
+}
+
+- (void)timerAction {
+    NSThread *thread = [NSThread currentThread];
+//    [thread sleep];
+    NSLog(@&quot;当前线程为%@&quot;,thread);
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br></div></div><p>看一看控制台的打印：</p> <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/08800410f1a74a1aa1eb011ec890ace4~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"> 可以看到所有的timer处理事件都是在被唤醒的时候执行的。</p> <p>在视图上增加了个scrollerView，在滑动scrollerView的时候也可以观察到Runloop“交接班”的过程。 <img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6b298eb8fb8c42ca855d0afb007ea55d~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?" alt="image.png"></p> <h2 id="runloop的应用"><a href="#runloop的应用" class="header-anchor">#</a> Runloop的应用</h2> <ul><li>卡顿检测
+在Runloop循环过程中的状态中，只有kCFRunLoopBeforeSources和kCFRunLoopAfterWaiting之后会处理事务，kCFRunLoopBeforeTimers之后马上到kCFRunLoopBeforeSources，kCFRunLoopBeforeWaiting之后立马进入睡眠，利用这个特性，就可以通过计算kCFRunLoopBeforeSources和kCFRunLoopAfterWaiting到各自下一个状态的时间是否唱过设置的时间阈值，来作为卡顿的条件。 <a href="https://github.com/UIControl/LXDAppFluecyMonitor" target="_blank" rel="noopener noreferrer">LXDAppFluecyMonitor<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>中的部分源码：</li></ul> <div class="language-swift line-numbers-mode"><pre class="language-swift"><code><span class="token punctuation">{</span>
+<span class="token comment">//专门一个线程监控</span>
+<span class="token function">dispatch_async</span><span class="token punctuation">(</span><span class="token function">lxd_fluecy_monitor_queue</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">^</span><span class="token punctuation">{</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>isMonitoring<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">//使用信号量来计算阻塞时间，在runloop状态变化后sigal</span>
+            long waitTime <span class="token operator">=</span> <span class="token function">dispatch_semaphore_wait</span><span class="token punctuation">(</span><span class="token keyword">self</span><span class="token punctuation">.</span>semphore<span class="token punctuation">,</span> <span class="token function">dispatch_time</span><span class="token punctuation">(</span><span class="token constant">DISPATCH_TIME_NOW</span><span class="token punctuation">,</span> lxd_wait_interval<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>waitTime <span class="token operator">!=</span> <span class="token constant">LXD_SEMPHORE_SUCCESS</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token comment">//没有观察者退出</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>observer<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                    <span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>timeOut <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">[</span><span class="token constant">SHAREDMONITOR</span> stopMonitoring<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>currentActivity <span class="token operator">==</span> <span class="token constant">kCFRunLoopBeforeSources</span> <span class="token operator">||</span> <span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>currentActivity <span class="token operator">==</span> <span class="token constant">kCFRunLoopAfterWaiting</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">++</span><span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>timeOut <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                        <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token comment">//如果大于5次打印堆栈信息</span>
+                    <span class="token punctuation">[</span><span class="token class-name">LXDBacktraceLogger</span> lxd_logMain<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">[</span><span class="token class-name">NSThread</span> sleepForTimeInterval<span class="token punctuation">:</span> lxd_restore_interval<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token constant">SHAREDMONITOR</span><span class="token punctuation">.</span>timeOut <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br></div></div><ul><li>异步渲染
+为了让界面更加流程，我们也可以让主线程先去做界面操作，不出现卡顿，等到Runloop快要进入休眠的时候再去做一些耗时的渲染操作。 <a href="https://github.com/ibireme/YYText" target="_blank" rel="noopener noreferrer">YYText<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>中的应用：</li></ul> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>static void YYRunLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
+    if (transactionSet.count == 0) return;
+    NSSet *currentSet = transactionSet;
+    transactionSet = [NSMutableSet new];
+    [currentSet enumerateObjectsUsingBlock:^(YYTextTransaction *transaction, BOOL *stop) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored &quot;-Warc-performSelector-leaks&quot;
+        [transaction.target performSelector:transaction.selector];
+#pragma clang diagnostic pop
+    }];
+}
+
+static void YYTextTransactionSetup() {
+    static dispatch_once_t onceToken;
+    dispatch_once(&amp;onceToken, ^{
+        transactionSet = [NSMutableSet new];
+        CFRunLoopRef runloop = CFRunLoopGetMain();
+        CFRunLoopObserverRef observer;
+        
+        observer = CFRunLoopObserverCreate(CFAllocatorGetDefault(),
+                                           kCFRunLoopBeforeWaiting | kCFRunLoopExit,
+                                           true,      // repeat
+                                           0xFFFFFF,  // after CATransaction(2000000)
+                                           YYRunLoopObserverCallBack, NULL);
+        CFRunLoopAddObserver(runloop, observer, kCFRunLoopCommonModes);
+        CFRelease(observer);
+    });
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br></div></div><ul><li>线程保活
+频繁开启新线程会消耗不必要的资源，如果经常有耗时操作，可以开启一条线程专门处理这些操作，但如果线程长时间不使用，如果Mode里没有任何的Source0/Source1/Timer/Observer, Runloop会立马退出。所以我们如果想让线程常在可以在线程中添加NSPort、CFRunLoopSourceRef来达到目的：</li></ul> <div class="language-c++ line-numbers-mode"><pre class="language-text"><code>#pragma mark - public methods
+- (instancetype)init{
+    if (self = [super init]) {
+        self.innerThread = [[NShread alloc] initWithBlock:^{
+            NSLog(@&quot;begin----&quot;);
+            // 创建上下文（要初始化一下结构体）
+            CFRunLoopSourceContext context = {0};
+            // 创建source
+            CFRunLoopSourceRef source = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &amp;context);
+            // 往Runloop中添加source
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+            // 销毁source
+            CFRelease(source);
+            // 启动
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e10, false);
+        }];
+        
+        [self.innerThread start];
+    }
+    return self;
+}
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br></div></div><h2 id="友情链接🔗"><a href="#友情链接🔗" class="header-anchor">#</a> 友情链接🔗</h2> <ul><li><a href="https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW20" target="_blank" rel="noopener noreferrer">Runloop苹果文档<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li><a href="https://opensource.apple.com/source/CF/" target="_blank" rel="noopener noreferrer">Runloop源码<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li><a href="https://juejin.cn/post/6889769418541252615#heading-1" target="_blank" rel="noopener noreferrer">Runloop-实际开发你想用的应用场景<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li><a href="https://juejin.cn/post/6844903598350925831" target="_blank" rel="noopener noreferrer">iOS底层原理总结 - RunLoop<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></div></div> <div class="page-slot page-slot-bottom"><div class="donation">
+  <button>打赏</button>
+  <div class="main">
+      <div class="pic">
+          <img src="https://nick5683.gitee.io/wxpayimg.png" alt="微信">
+          <img src="https://nick5683.gitee.io/alipayimg.png" alt="支付宝">
+      </div>
+  </div>
+</div></div> <div class="page-edit"><!----> <div class="tags"><a href="/tags/?tag=iOS" title="标签">#iOS</a></div> <div class="last-updated"><span class="prefix">上次更新:</span> <span class="time">2023/10/21, 18:03:38</span></div></div> <div class="page-nav-wapper"><!----> <div class="page-nav"><p class="inner"><span class="prev">
+        ←
+        <a href="/pages/050218/" class="prev">KVC和KVO理解</a></span> <span class="next"><a href="/pages/050300/">iOS面试题</a>→
+      </span></p></div></div></div> <div class="article-list"><div class="article-title"><a href="/archives/" class="iconfont icon-bi">最近更新</a></div> <div class="article-wrapper"><dl><dd>01</dd> <dt><a href="/pages/020200/"><div>
+            iOS 闭包和Block的区别
+            <!----></div></a> <span class="date">01-28</span></dt></dl><dl><dd>02</dd> <dt><a href="/pages/031100/"><div>
+            Mac开发环境配置看这一篇就够了
+            <!----></div></a> <span class="date">10-26</span></dt></dl><dl><dd>03</dd> <dt><a href="/pages/050405/"><div>
+            关于 Swift Method Swizzling(iOS的hook机制使用
+            <!----></div></a> <span class="date">10-25</span></dt></dl> <dl><dd></dd> <dt><a href="/archives/" class="more">更多文章&gt;</a></dt></dl></div></div></main></div> <div class="footer"><div class="icons"><a href="https://gitee.com/nick5683" title="Gitee" target="_blank" class="iconfont icon-github"></a><a href="https://www.jianshu.com/u/cc31265bb1a0" title="简书" target="_blank" class="iconfont icon-jianshu"></a><a href="mailto:nick5683@qq.com" title="发邮件" target="_blank" class="iconfont icon-youjian"></a><a href="https://nick5683.gitee.io/rss.xml" title="订阅" target="_blank" class="iconfont icon-rss"></a></div> 
+  Theme by
+  <a href="https://github.com/xugaoyi/vuepress-theme-vdoing" target="_blank" title="本站主题">Vdoing</a> 
+    | Copyright © 2022-2025
+    <span>|</span></div> <div class="buttons"><div title="返回顶部" class="button blur go-to-top iconfont icon-fanhuidingbu" style="display:none;"></div> <div title="去评论" class="button blur go-to-comment iconfont icon-pinglun" style="display:none;"></div> <div title="主题模式" class="button blur theme-mode-but iconfont icon-zhuti"><ul class="select-box" style="display:none;"><li class="iconfont icon-zidong">
+          跟随系统
+        </li><li class="iconfont icon-rijianmoshi">
+          浅色模式
+        </li><li class="iconfont icon-yejianmoshi">
+          深色模式
+        </li><li class="iconfont icon-yuedu">
+          阅读模式
+        </li></ul></div></div> <!----> <!----> <!----></div><div class="global-ui"><canvas id="vuepress-canvas-cursor"></canvas><!----><div id="musicPlayer" data-v-445031a8><!----> <div class="bbox" data-v-445031a8><div class="pan" style="background-image:url(/assets/img/pan.07613e22.png);" data-v-445031a8><img src="" alt class="pan_c" data-v-445031a8></div> <div class="box" style="background-image:url();" data-v-445031a8><div class="music_shlter_2" style="background-image:url();" data-v-445031a8></div> <div class="music_shlter" style="background-image:url();" data-v-445031a8></div> <div class="music_shlter_3" data-v-445031a8></div> <div class="music_dis" data-v-445031a8><div class="dis_list" data-v-445031a8>···</div> <p class="music_title" data-v-445031a8></p> <p class="music_intro" data-v-445031a8>歌手: </p> <ul class="music_words" data-v-445031a8><div class="music_words_box" style="top:0px;" data-v-445031a8></div></ul></div> <div class="control_box" data-v-445031a8><div class="control_button" data-v-445031a8><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAACMCAYAAACksC0pAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALjSURBVHhe7doxbuswFETRSG68pVTZ+y+SJdmVE/GDC0hzBxnynoqpBGhIaoy84/vyBnu9Xv9ut9vH/HN5j8fj836/v88/Mc/n8+uca9RxHPgm2VUkwN2kNux4TiTA65Y+5nIL53m+5hI1nuMJLGeAgKu0xW42AwQEiv1/10bJBLhhC0198z2BBFtoueUC3I0BlkvdOLZQyGiHc4myhXJsoc2CG9YWSkgFeJ6nJYZgCy1nCy23XIC7tVBPYL/YhjVAwGiHc4mK/Uc+daX8FbZQ/YrfQEhqpGIwQEDqkzE2SiTA3X5GJHkCAcuVmN1aqIO95ZIb1gABqQD9GQG5XuxcsRyp4KSuUE8gwRZabrkAd2OA5Wyh5Rzs7WcLbRbcsLZQQipAB3shttByttByywW4Wwv1BPaLbVgDBDjYW84WWs5vYLnkjWOAgFSADvYuwBMISG1YWyhkvNi5RNlCIZaYcqkAx3MMEHC92LliOVLBSV2hnkBCasPGSowtlGELLWeAEFtoOQd7+9lCmwU3rC2UkApwjG54AgGpAG2hEFtoueUC3K2FegL7xTasAQJGO5xLlCMVEFtoOb+B5ZI3jgECUgE62LsATyAgtWFtoRBHKspZYsqlAhzPMUDA9WLniuVIBSd1hXoCCakNGysxtlCGLbScAUJsoeUc7O1nC20W3LC2UEIqwDG64QkEpAK0hUJsoeWWC3C3FuoJ7BfbsAYIGO1wLlGOVEBsoeX8BpZL3jgGCEgF6GDvAjyBgOVKzG4tNDVSEfsZsRtLTLlUgOM5Bgi4XuxcsRyp4KSuUE8gwRZabrkAd2OA5Wyh5Rzs7WcLbRbcsLZQQipAB3shttByttByywW4Wwv1BPaLbVgDBDjYW84Wql/xGwgZ85pziTNAQOqT4WDvAjyBgOVKzG4t1MHecskNa4CAVID+jIBcL3auWI5UcFJXqCeQYAstt1yAuzHAcrbQcg729rOFNstt2LfvHxY+GuRFc4rhAAAAAElFTkSuQmCC" alt class="control_icon" data-v-445031a8></div> <div class="progress" data-v-445031a8><div class="progress_c" style="width:0%;" data-v-445031a8><div class="progress_circle" data-v-445031a8><div class="progress_circle_c" data-v-445031a8></div></div></div></div></div></div> <video id="music" autoplay="autoplay" src="" name="media" data-v-445031a8></video></div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+    <script src="/assets/js/app.20c720c9.js" defer></script><script src="/assets/js/4.2c0aa082.js" defer></script><script src="/assets/js/2.5c62803a.js" defer></script><script src="/assets/js/173.35ee0e44.js" defer></script><script src="/assets/js/43.273be00f.js" defer></script><script src="/assets/js/25.e8711eab.js" defer></script><script src="/assets/js/26.8841a5a6.js" defer></script>
+  </body>
+</html>
